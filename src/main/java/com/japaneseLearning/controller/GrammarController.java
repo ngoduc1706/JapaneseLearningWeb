@@ -2,6 +2,7 @@ package com.japaneseLearning.controller;
 
 import com.japaneseLearning.dto.ApiResponse;
 import com.japaneseLearning.entity.Grammar;
+import com.japaneseLearning.exception.ResourceNotFoundException;
 import com.japaneseLearning.repository.GrammarRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,14 +30,14 @@ public class GrammarController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Grammar>>> getAllGrammars() {
-        List<Grammar> grammars = grammarRepository.findAll();
+        List<Grammar> grammars = grammarRepository.findAllWithLesson();
         return ResponseEntity.ok(ApiResponse.success(grammars, "Grammars retrieved successfully"));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Grammar>> getGrammarById(@PathVariable Long id) {
         Grammar grammar = grammarRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Grammar not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Grammar not found with id: " + id));
         return ResponseEntity.ok(ApiResponse.success(grammar, "Grammar retrieved successfully"));
     }
 
@@ -76,6 +77,16 @@ public class GrammarController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<Grammar>> createGrammar(@RequestBody Grammar grammar) {
+        if (grammar.getRule() == null || grammar.getRule().trim().isEmpty()) {
+            throw new IllegalArgumentException("Grammar rule is required");
+        }
+
+        if (grammar.getLesson() != null && grammar.getLesson().getLessonId() != null) {
+            var lesson = lessonRepository.findById(grammar.getLesson().getLessonId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + grammar.getLesson().getLessonId()));
+            grammar.setLesson(lesson);
+        }
+
         Grammar saved = grammarRepository.save(grammar);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(saved, "Grammar created successfully"));
@@ -84,12 +95,22 @@ public class GrammarController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Grammar>> updateGrammar(@PathVariable Long id, @RequestBody Grammar grammarDetails) {
         Grammar grammar = grammarRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Grammar not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Grammar not found with id: " + id));
         
+        if (grammarDetails.getRule() == null || grammarDetails.getRule().trim().isEmpty()) {
+            throw new IllegalArgumentException("Grammar rule is required");
+        }
+
         grammar.setRule(grammarDetails.getRule());
         grammar.setExample(grammarDetails.getExample());
         grammar.setLevel(grammarDetails.getLevel());
         grammar.setNotes(grammarDetails.getNotes());
+
+        if (grammarDetails.getLesson() != null && grammarDetails.getLesson().getLessonId() != null) {
+            var lesson = lessonRepository.findById(grammarDetails.getLesson().getLessonId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + grammarDetails.getLesson().getLessonId()));
+            grammar.setLesson(lesson);
+        }
         
         Grammar updated = grammarRepository.save(grammar);
         return ResponseEntity.ok(ApiResponse.success(updated, "Grammar updated successfully"));
@@ -97,6 +118,9 @@ public class GrammarController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteGrammar(@PathVariable Long id) {
+        if (!grammarRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Grammar not found with id: " + id);
+        }
         grammarRepository.deleteById(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Grammar deleted successfully"));
     }

@@ -1,6 +1,8 @@
 package com.japaneseLearning.repository;
 
 import com.japaneseLearning.entity.Course;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,4 +29,21 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
            "LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(c.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Course> searchByKeyword(@Param("keyword") String keyword);
+
+    @Query("SELECT c FROM Course c WHERE " +
+           "(:keyword IS NULL OR :keyword = '' OR " +
+           "LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(c.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+           "(:categoryId IS NULL OR c.category.categoryId = :categoryId) AND " +
+           "(:isFree IS NULL OR c.isFree = :isFree) AND " +
+           "(:minPrice IS NULL OR c.price >= :minPrice) AND " +
+           "(:maxPrice IS NULL OR c.price <= :maxPrice)")
+    Page<Course> searchWithFilters(
+            @Param("keyword") String keyword,
+            @Param("categoryId") Long categoryId,
+            @Param("isFree") Boolean isFree,
+            @Param("minPrice") Double minPrice,
+            @Param("maxPrice") Double maxPrice,
+            Pageable pageable
+    );
 }

@@ -2,6 +2,7 @@ package com.japaneseLearning.controller;
 
 import com.japaneseLearning.dto.ApiResponse;
 import com.japaneseLearning.entity.Category;
+import com.japaneseLearning.exception.ResourceNotFoundException;
 import com.japaneseLearning.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,7 @@ public class CategoryController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Category>> getCategoryById(@PathVariable Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
         return ResponseEntity.ok(ApiResponse.success(category, "Category retrieved successfully"));
     }
 
@@ -37,13 +38,19 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<Category>> getCategoryByName(@PathVariable String name) {
         Category category = categoryRepository.findByNameIgnoreCase(name);
         if (category == null) {
-            throw new RuntimeException("Category not found with name: " + name);
+            throw new ResourceNotFoundException("Category not found with name: " + name);
         }
         return ResponseEntity.ok(ApiResponse.success(category, "Category retrieved successfully"));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<Category>> createCategory(@RequestBody Category category) {
+        if (category.getName() == null || category.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Category name is required");
+        }
+        if (categoryRepository.findByNameIgnoreCase(category.getName()) != null) {
+            throw new IllegalArgumentException("Category name already exists");
+        }
         Category saved = categoryRepository.save(category);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(saved, "Category created successfully"));
@@ -52,7 +59,16 @@ public class CategoryController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Category>> updateCategory(@PathVariable Long id, @RequestBody Category categoryDetails) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
+
+        if (categoryDetails.getName() == null || categoryDetails.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Category name is required");
+        }
+
+        Category existing = categoryRepository.findByNameIgnoreCase(categoryDetails.getName());
+        if (existing != null && !existing.getCategoryId().equals(id)) {
+            throw new IllegalArgumentException("Category name already exists");
+        }
         
         category.setName(categoryDetails.getName());
         category.setDescription(categoryDetails.getDescription());
@@ -63,6 +79,9 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable Long id) {
+        if (!categoryRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Category not found with id: " + id);
+        }
         categoryRepository.deleteById(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Category deleted successfully"));
     }

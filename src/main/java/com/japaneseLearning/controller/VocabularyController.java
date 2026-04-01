@@ -6,6 +6,7 @@ import com.japaneseLearning.dto.VocabularyDTO;
 import com.japaneseLearning.dto.VocabularyProgressDTO;
 import com.japaneseLearning.entity.Vocabulary;
 import com.japaneseLearning.repository.VocabularyRepository;
+import com.japaneseLearning.service.VocabularyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -23,15 +24,18 @@ public class VocabularyController {
     private final com.japaneseLearning.service.EnrollmentService enrollmentService;
     private final com.japaneseLearning.repository.LessonRepository lessonRepository;
     private final com.japaneseLearning.service.VocabularyProgressService vocabularyProgressService;
+    private final VocabularyService vocabularyService;
 
     public VocabularyController(VocabularyRepository vocabularyRepository, 
                                com.japaneseLearning.service.EnrollmentService enrollmentService,
                                com.japaneseLearning.repository.LessonRepository lessonRepository,
-                               com.japaneseLearning.service.VocabularyProgressService vocabularyProgressService) {
+                               com.japaneseLearning.service.VocabularyProgressService vocabularyProgressService,
+                               VocabularyService vocabularyService) {
         this.vocabularyRepository = vocabularyRepository;
         this.enrollmentService = enrollmentService;
         this.lessonRepository = lessonRepository;
         this.vocabularyProgressService = vocabularyProgressService;
+        this.vocabularyService = vocabularyService;
     }
 
     /**
@@ -152,8 +156,8 @@ public class VocabularyController {
         vocabulary.setHiragana(vocabularyDTO.getHiragana());
         vocabulary.setRomaji(vocabularyDTO.getRomaji());
         vocabulary.setMeaning(vocabularyDTO.getMeaning());
-        
-        Vocabulary saved = vocabularyRepository.save(vocabulary);
+
+        Vocabulary saved = vocabularyService.createVocabulary(vocabulary, vocabularyDTO.getLessonId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(convertToDTO(saved), "Vocabulary created successfully"));
     }
@@ -161,14 +165,14 @@ public class VocabularyController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<VocabularyDTO>> updateVocabulary(@PathVariable Long id, @RequestBody VocabularyDTO vocabularyDTO) {
         Vocabulary vocabulary = vocabularyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Vocabulary not found with id: " + id));
+            .orElseThrow(() -> new RuntimeException("Vocabulary not found with id: " + id));
         
         vocabulary.setKanji(vocabularyDTO.getKanji());
         vocabulary.setHiragana(vocabularyDTO.getHiragana());
         vocabulary.setRomaji(vocabularyDTO.getRomaji());
         vocabulary.setMeaning(vocabularyDTO.getMeaning());
-        
-        Vocabulary updated = vocabularyRepository.save(vocabulary);
+
+        Vocabulary updated = vocabularyService.updateVocabulary(id, vocabulary, vocabularyDTO.getLessonId());
         return ResponseEntity.ok(ApiResponse.success(convertToDTO(updated), "Vocabulary updated successfully"));
     }
 

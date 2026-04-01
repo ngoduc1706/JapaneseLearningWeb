@@ -50,9 +50,13 @@ public class CourseController {
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<CourseDTO>>> searchCourses(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Boolean isFree,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        List<CourseDTO> courses = courseService.searchCourses(keyword, page, size);
+        List<CourseDTO> courses = courseService.searchCourses(keyword, categoryId, isFree, minPrice, maxPrice, page, size);
         return ResponseEntity.ok(ApiResponse.success(courses, "Search results retrieved successfully"));
     }
 
