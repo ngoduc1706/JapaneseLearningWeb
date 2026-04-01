@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Lessons Grammar Partial')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar('courses')}"></nav>
+<main class="container py-5">
+  <h1>Grammar Partial</h1>
+  <p class="text-muted">Synced placeholder from Lessons/_GrammarPartial.cshtml.</p>
+  <div id="grammarList" class="list-group"></div>
+</main>
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+fetch('/api/grammars').then(r => r.json()).then(d => {
+  const items = d.data || [];
+  document.getElementById('grammarList').innerHTML = items.slice(0, 10).map(x =>
+    `<div class="list-group-item"><strong>${x.rule || '-'}</strong><br><small>${x.example || ''}</small></div>`
+  ).join('') || '<div class="list-group-item">No grammar found.</div>';
+}).catch(() => {
+  document.getElementById('grammarList').innerHTML = '<div class="list-group-item text-danger">Cannot load grammars.</div>';
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Shared ASR Widget')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar('courses')}"></nav>
+<main class="container py-5">
+  <h1>ASR Widget</h1>
+  <p class="text-muted">Synced placeholder from Shared/_AsrWidget.cshtml.</p>
+  <div class="card"><div class="card-body">
+    <button class="btn btn-primary" id="startAsrBtn">Start Recording</button>
+    <button class="btn btn-secondary" id="stopAsrBtn">Stop</button>
+    <pre class="mt-3 p-3 bg-light border rounded" id="asrOutput">ASR output will appear here...</pre>
+  </div></div>
+</main>
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+let recording = false;
+document.getElementById('startAsrBtn').addEventListener('click', () => {
+  recording = true;
+  document.getElementById('asrOutput').textContent = 'Recording started (UI demo).';
+});
+document.getElementById('stopAsrBtn').addEventListener('click', () => {
+  if (recording) {
+    document.getElementById('asrOutput').textContent = 'Recording stopped (UI demo).';
+    recording = false;
+  }
+});
+</script>
+</body>
+</html>

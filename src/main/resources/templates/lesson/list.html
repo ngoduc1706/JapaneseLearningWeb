@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head(${pageTitle})"></head>
+<body>
+<style>
+    .ls-banner{background:linear-gradient(135deg,#1a2e1a 0%,#1e3a2e 50%,#0f4a3a 100%);border-radius:16px;padding:28px 32px;color:white;display:flex;align-items:center;gap:20px;margin-bottom:28px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+    .ls-bicon{width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+    .ls-binfo{flex:1}
+    .ls-binfo h2{font-size:20px;font-weight:800;margin-bottom:4px}
+    .ls-binfo p{font-size:13px;opacity:.75}
+    .ls-bstats{display:flex;gap:14px}
+    .ls-stat{text-align:center;background:rgba(255,255,255,.12);border-radius:10px;padding:10px 18px}
+    .ls-stat-num{font-size:24px;font-weight:900}
+    .ls-stat-lbl{font-size:11px;opacity:.7}
+    .sum-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:26px}
+    @media(max-width:900px){.sum-grid{grid-template-columns:repeat(2,1fr)}}
+    .sum-card{background:white;border-radius:14px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    .sum-ico{font-size:28px;margin-bottom:8px}
+    .sum-lbl{font-size:10px;font-weight:700;color:#aaa;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+    .sum-val{font-size:22px;font-weight:900;color:#111}
+    .sum-bar{height:4px;border-radius:2px;background:#eee;margin-top:10px;overflow:hidden}
+    .sum-bar-fill{height:100%;border-radius:2px;background:var(--primary-color)}
+    .ls-ctrl{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+    .tab-wr{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+    .lTab{padding:8px 14px;border:1.5px solid #ddd;background:white;border-radius:50px;font-size:12px;font-weight:700;cursor:pointer;color:#555;transition:.15s;display:flex;align-items:center;gap:4px}
+    .lTab.active{background:var(--primary-color);border-color:var(--primary-color);color:white}
+    .lTab:not(.active):hover{border-color:var(--primary-color);color:var(--primary-color)}
+    .ls-srch{padding:8px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;outline:none;min-width:160px}
+    .ls-srch:focus{border-color:var(--primary-color)}
+    .ls-row{background:white;border-radius:14px;margin-bottom:12px;padding:20px 24px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:box-shadow .2s;border-left:4px solid #ddd}
+    .ls-row:hover{box-shadow:0 6px 20px rgba(0,0,0,.1)}
+    .ls-row.done{border-left-color:var(--primary-color)}
+    .ls-row.ongoing{border-left-color:#f59e0b}
+    .ls-row.new-ls{border-left-color:#6c63ff}
+    .ls-num{min-width:48px;text-align:center;flex-shrink:0}
+    .ls-num-lbl{font-size:9px;color:#aaa;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+    .ls-num-val{font-size:22px;font-weight:900;color:#111}
+    .ls-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+    .ls-title{font-size:15px;font-weight:800;color:#111;margin-bottom:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .ls-desc{font-size:12px;color:#666;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80%}
+    .ls-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+    .tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+    .tag-v{background:#e0f7f4;color:#007a6c}
+    .tag-g{background:#ede9fe;color:#5b21b6}
+    .tag-k{background:#ffe4e4;color:#b91c1c}
+    .ls-meta{display:flex;gap:12px;font-size:11px;color:#aaa;flex-wrap:wrap}
+    .ls-action{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+    .badge-st{font-size:11px;font-weight:700;padding:3px 10px;border-radius:50px;display:flex;align-items:center;gap:4px;white-space:nowrap}
+    .badge-done{background:#e0f7f4;color:#007a6c}
+    .badge-progress{background:#fff8e1;color:#b45309}
+    .badge-new{background:#ede9fe;color:#5b21b6}
+    .btn-ls{padding:9px 20px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;white-space:nowrap}
+    .btn-review{background:var(--primary-color);color:white}
+    .btn-review:hover{background:#1fa99d}
+    .btn-cont{background:#f59e0b;color:white}
+    .btn-cont:hover{background:#d97706}
+    .btn-start{background:#6c63ff;color:white}
+    .btn-start:hover{background:#5247d4}
+    .empty-ls{text-align:center;padding:60px 20px;color:#888;font-size:15px}
+    .pg-ls{display:flex;justify-content:center;gap:6px;padding:20px 0;flex-wrap:wrap}
+    .pg-ls-btn{min-width:36px;height:36px;padding:0 10px;border:1.5px solid #ddd;background:white;border-radius:8px;font-size:13px;font-weight:700;color:#555;cursor:pointer;transition:.15s}
+    .pg-ls-btn.active{background:var(--primary-color);border-color:var(--primary-color);color:white}
+    .pg-ls-btn:hover:not(:disabled):not(.active){border-color:var(--primary-color);color:var(--primary-color)}
+    .pg-ls-btn:disabled{opacity:.35;cursor:not-allowed}
+</style>
+
+    <div th:replace="fragments/sidebar :: sidebar('lessons')"></div>
+    <main class="main-content">
+        <div th:replace="fragments/topbar :: topbar('/dashboard', 'Dashboard', '#', 'Cài đặt')"></div>
+        <div class="container">
+
+            <div style="margin-bottom: 20px;">
+                <a href="/lessons" style="text-decoration: none; color: var(--primary-color); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                    ← Quay lại danh sách khóa học
+                </a>
+                <a th:if="${course != null}" th:href="@{'/courses/' + ${course.courseId} + '/route'}"
+                   style="margin-top:10px;display:inline-flex;padding:8px 14px;border-radius:8px;background:#0f766e;color:#fff;text-decoration:none;font-weight:700;font-size:13px;">
+                    🧭 Xem lộ trình học cá nhân
+                </a>
+            </div>
+
+            <!-- Banner -->
+            <div class="ls-banner">
+                <div class="ls-bicon">🎓</div>
+                <div class="ls-binfo">
+                    <h2 th:text="${course != null ? course.title : 'Bài học của bạn'}">Bài học của bạn</h2>
+                    <p th:text="${course != null ? course.description : 'Theo dõi tiến trình và tiếp tục hành trình chinh phục JLPT'}">Theo dõi tiến trình và tiếp tục hành trình chinh phục JLPT</p>
+                </div>
+                <div class="ls-bstats">
+                    <div class="ls-stat">
+                        <div class="ls-stat-num" th:text="${lessons != null ? lessons.size() : 0}">0</div>
+                        <div class="ls-stat-lbl">Bài học</div>
+                    </div>
+                    <div class="ls-stat">
+                        <div class="ls-stat-num">0</div>
+                        <div class="ls-stat-lbl">Hoàn thành</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary cards -->
+            <div class="sum-grid">
+                <div class="sum-card">
+                    <div class="sum-ico">✅</div>
+                    <div class="sum-lbl">HOÀN THÀNH</div>
+                    <div class="sum-val">0 / <span th:text="${lessons != null ? lessons.size() : 0}">0</span></div>
+                    <div class="sum-bar"><div class="sum-bar-fill" style="width:0%"></div></div>
+                </div>
+                <div class="sum-card">
+                    <div class="sum-ico">📖</div>
+                    <div class="sum-lbl">ĐANG HỌC</div>
+                    <div class="sum-val" style="color:#f59e0b">0 bài</div>
+                    <div class="sum-bar"><div class="sum-bar-fill" style="width:0%;background:#f59e0b"></div></div>
+                </div>
+                <div class="sum-card">
+                    <div class="sum-ico">⭐</div>
+                    <div class="sum-lbl">ĐIỂM TÍCH LŨY</div>
+                    <div class="sum-val" style="color:#f59e0b">0</div>
+                    <div class="sum-bar"><div class="sum-bar-fill" style="width:0%;background:#f59e0b"></div></div>
+                </div>
+                <div class="sum-card">
+                    <div class="sum-ico">🔥</div>
+                    <div class="sum-lbl">CHUỖI NGÀY</div>
+                    <div class="sum-val" style="color:#ef4444">0 ngày</div>
+                    <div class="sum-bar"><div class="sum-bar-fill" style="width:0%;background:#ef4444"></div></div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="ls-ctrl">
+                <div class="tab-wr">
+                    <button class="lTab active" onclick="setLSt('all',this)">Tất cả</button>
+                    <button class="lTab" onclick="setLSt('done',this)">✅ Hoàn thành</button>
+                    <button class="lTab" onclick="setLSt('ongoing',this)">📖 Đang học</button>
+                    <button class="lTab" onclick="setLSt('new-ls',this)">🌟 Mới</button>
+                    <button class="lTab" onclick="setLSt('locked',this)">🔒 Chưa mở</button>
+                    
+                    <!-- Admin Add Lesson Button -->
+                    <button th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" 
+                            class="btn btn-primary btn-sm rounded-pill ms-2" style="font-size:12px;font-weight:700;"
+                            onclick="openAdminModal()">
+                        + Thêm Bài Học
+                    </button>
+                </div>
+                <input class="ls-srch" id="lsSearch" type="text" placeholder="Tìm bài học..." oninput="doLSrch()">
+            </div>
+
+            <!-- Lesson rows -->
+            <div id="lessonList">
+                <div th:each="lesson, iter : ${lessons}"
+                     class="ls-row new-ls"
+                     data-status="new-ls"
+                     th:data-title="${lesson.title}">
+
+                    <div class="ls-num">
+                        <div class="ls-num-lbl">BÀI</div>
+                        <div class="ls-num-val"
+                             th:text="${iter.count &lt; 10 ? '0' + iter.count : iter.count}">01</div>
+                    </div>
+
+                    <div class="ls-info">
+                        <div class="ls-title" th:text="${lesson.title}">Chào hỏi</div>
+                        <div class="ls-desc"
+                             th:if="${lesson.content != null}"
+                             th:text="${#strings.abbreviate(lesson.content, 120)}">Mô tả</div>
+                        <div class="ls-tags">
+                            <span class="tag tag-v">Từ vựng</span>
+                            <span class="tag tag-g"
+                                  th:if="${lesson.grammars != null and lesson.grammars.size() > 0}">Ngữ pháp</span>
+                            <span class="tag tag-k"
+                                  th:if="${lesson.kanjis != null and lesson.kanjis.size() > 0}">Kanji</span>
+                        </div>
+                        <div class="ls-meta">
+                            <span>📚 <span th:text="${lesson.vocabularies != null ? lesson.vocabularies.size() : 0}">0</span> mục</span>
+                            <span>⏱ 30 phút</span>
+                            <span>⭐ <span th:text="${iter.count * 30}">30</span> điểm</span>
+                        </div>
+                    </div>
+
+                    <div class="ls-action">
+                        <th:block th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                            <div style="display:flex;gap:6px;margin-bottom:6px;">
+                                <button class="btn btn-sm btn-light p-1 shadow-sm" title="Sửa"
+                                        th:data-id="${lesson.lessonId}"
+                                        th:data-title="${lesson.title}"
+                                        th:data-content="${lesson.content}"
+                                        th:data-order="${lesson.orderInCourse}"
+                                        th:data-vlink="${lesson.vocabYouTubeLink}"
+                                        th:data-glink="${lesson.grammarYouTubeLink}"
+                                        onclick="openAdminModal(this)">✏️</button>
+                                <button class="btn btn-sm btn-light p-1 shadow-sm text-danger" title="Xóa"
+                                        th:onclick="'deleteLesson(' + ${lesson.lessonId} + ')'">🗑️</button>
+                            </div>
+                        </th:block>
+                        <span class="badge-st badge-new">🌟 Mới</span>
+                        <button class="btn-ls btn-start"
+                                th:onclick="'window.location.href=\'/lessons/' + ${lesson.lessonId} + '\''">
+                            Bắt đầu
+                        </button>
+                    </div>
+                </div>
+
+                <div th:if="${lessons == null or lessons.isEmpty()}" class="empty-ls">
+                    <div style="font-size:52px">📚</div>
+                    <p>Chưa có bài học nào trong hệ thống.</p>
+                </div>
+            </div>
+
+            <div class="pg-ls" id="paginationLs"></div>
+        </div>
+    </main>
+
+<!-- Admin Lesson Modal (Premium UI) -->
+<div class="modal-overlay" id="adminLessonModal" style="z-index: 2005;">
+    <div class="pa-modal-box">
+        <div class="pa-modal-header">
+            <h5 class="pa-modal-title" id="alModalTitle">🎓 Thêm Bài Học Mới</h5>
+            <button class="pa-btn-close" onclick="closeAdminModal()">✕</button>
+        </div>
+        <form id="adminLessonForm" onsubmit="saveLesson(event)">
+            <input type="hidden" id="alId">
+            <div class="pa-modal-body">
+                <div class="pa-form-group">
+                    <label class="pa-form-label">Tên Bài Học <span style="color:#e53935">*</span></label>
+                    <input type="text" id="alTitle" class="pa-form-control pa-form-control-jp" required placeholder="Ví dụ: Bài 1 - Chào hỏi">
+                </div>
+
+                <div class="pa-row">
+                    <div class="pa-col pa-form-group">
+                        <label class="pa-form-label">🔢 Thứ tự trong khóa</label>
+                        <input type="number" id="alOrder" class="pa-form-control" value="1" placeholder="Vị trí bài học">
+                    </div>
+                </div>
+
+                <div class="pa-form-group">
+                    <label class="pa-form-label">📝 Mô Tả / Nội Dung</label>
+                    <textarea id="alContent" class="pa-form-control" rows="3" placeholder="Tóm tắt về nội dung bài học này..."></textarea>
+                </div>
+
+                <div class="pa-form-group">
+                    <label class="pa-form-label">📺 Link Từ Vựng (YouTube ID)</label>
+                    <input type="text" id="alVLink" class="pa-form-control" placeholder="Ví dụ: e-ORhEE9VVg">
+                </div>
+
+                <div class="pa-form-group">
+                    <label class="pa-form-label">📺 Link Ngữ Pháp (YouTube ID)</label>
+                    <input type="text" id="alGLink" class="pa-form-control" placeholder="Ví dụ: Lj2tXyO-abc">
+                </div>
+            </div>
+            
+            <div class="pa-modal-footer">
+                <button type="button" class="pa-btn pa-btn-light" onclick="closeAdminModal()">Hủy</button>
+                <button type="submit" class="pa-btn pa-btn-primary" id="alSubmitBtn">Lưu Bài Học</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const CURRENT_COURSE_ID = /*[[${course != null ? course.courseId : 0}]]*/ 0;
+</script>
+<script>
+    const PAGE_LS=10;let pageLs=1,stLs='all',searchLs='';
+    function lsRows(){return[...document.querySelectorAll('#lessonList .ls-row')]}
+    function lsVis(){return lsRows().filter(el=>{const s=(el.dataset.status||'new-ls'),t=(el.dataset.title||'').toLowerCase();return(stLs==='all'||s===stLs)&&(!searchLs||t.includes(searchLs))})}
+    function renderLS(p){const vs=lsVis(),tp=Math.max(1,Math.ceil(vs.length/PAGE_LS));pageLs=Math.min(Math.max(1,p),tp);const s=(pageLs-1)*PAGE_LS;lsRows().forEach(r=>r.style.display='none');vs.slice(s,s+PAGE_LS).forEach(r=>r.style.display='');renderPLS(tp)}
+    function renderPLS(tp){const pg=document.getElementById('paginationLs');if(!pg||tp<=1){if(pg)pg.innerHTML='';return}let h=`<button class="pg-ls-btn" onclick="renderLS(${pageLs-1})" ${pageLs===1?'disabled':''}>←</button>`;for(let i=1;i<=tp;i++)h+=`<button class="pg-ls-btn ${i===pageLs?'active':''}" onclick="renderLS(${i})">${i}</button>`;h+=`<button class="pg-ls-btn" onclick="renderLS(${pageLs+1})" ${pageLs===tp?'disabled':''}>→</button>`;pg.innerHTML=h}
+    function setLSt(s,btn){stLs=s;document.querySelectorAll('.lTab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderLS(1)}
+    function doLSrch(){searchLs=(document.getElementById('lsSearch').value||'').toLowerCase().trim();renderLS(1)}
+    document.addEventListener('DOMContentLoaded',function(){renderLS(1);document.getElementById('lsSearch').addEventListener('keydown',e=>{if(e.key==='Enter')doLSrch()})});
+
+/* ── ADMIN CRUD FUNCTIONS ── */
+
+function openAdminModal(btnEl) {
+    const modal = document.getElementById('adminLessonModal');
+    const form = document.getElementById('adminLessonForm');
+    
+    if (btnEl) {
+        // Edit mode
+        const id = btnEl.getAttribute('data-id');
+        document.getElementById('alModalTitle').textContent = 'Sửa Bài Học #' + id;
+        document.getElementById('alId').value = id;
+        document.getElementById('alTitle').value = btnEl.getAttribute('data-title') || '';
+        document.getElementById('alContent').value = btnEl.getAttribute('data-content') || '';
+        document.getElementById('alOrder').value = btnEl.getAttribute('data-order') || 1;
+        document.getElementById('alVLink').value = btnEl.getAttribute('data-vlink') || '';
+        document.getElementById('alGLink').value = btnEl.getAttribute('data-glink') || '';
+    } else {
+        // Create mode
+        document.getElementById('alModalTitle').textContent = 'Thêm Bài Học Mới';
+        form.reset();
+        document.getElementById('alId').value = '';
+    }
+    
+    modal.classList.add('open');
+}
+
+function closeAdminModal() {
+    document.getElementById('adminLessonModal').classList.remove('open');
+}
+
+async function saveLesson(e) {
+    e.preventDefault();
+    const btn = document.getElementById('alSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Đang lưu...';
+
+    const id = document.getElementById('alId').value;
+    const isEdit = !!id;
+    const method = isEdit ? 'PUT' : 'POST';
+    const url = isEdit ? `/api/lessons/${id}` : `/api/lessons`;
+
+    const payload = {
+        courseId: CURRENT_COURSE_ID,
+        title: document.getElementById('alTitle').value.trim(),
+        content: document.getElementById('alContent').value.trim(),
+        orderInCourse: parseInt(document.getElementById('alOrder').value) || 1,
+        vocabYouTubeLink: document.getElementById('alVLink').value.trim(),
+        grammarYouTubeLink: document.getElementById('alGLink').value.trim()
+    };
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        
+        if (res.ok) {
+            window.location.reload();
+        } else {
+            const data = await res.json();
+            alert('Lỗi lưu bài học: ' + (data.message || ''));
+        }
+    } catch(err) {
+        alert('Lỗi kết nối với máy chủ!');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Lưu Bài Học';
+    }
+}
+
+async function deleteLesson(id) {
+    if(!confirm('🚨 BẠN CHẮC CHẮN MUỐN XÓA BÀI HỌC #' + id + '?\nHành động này không thể hoàn tác!')) return;
+    try {
+        const res = await fetch(`/api/lessons/${id}`, { method: 'DELETE' });
+        if(res.ok) {
+            window.location.reload();
+        } else {
+            const data = await res.json();
+            alert('Không thể xóa: ' + (data.message || ''));
+        }
+    } catch(err) {
+        alert('Lỗi mạng kết nối máy chủ');
+    }
+}
+</script>
+</body>
+</html>

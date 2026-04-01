@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head></head>
+<body>
+    <!-- Fragment: Sidebar Navigation -->
+    <aside class="sidebar" th:fragment="sidebar(activePage)">
+        <div class="logo">🌸 <span>Learning</span></div>
+        <div class="user-box" th:if="${session.userName}">
+            <div class="user-name" th:text="${session.userName}">User Name</div>
+        </div>
+        <nav>
+            <a href="/vocabularies"
+               class="nav-item"
+               th:classappend="${activePage} == 'vocabularies' ? 'active' : ''">
+                <i>📖</i> Từ vựng
+            </a>
+            <a href="/grammars"
+               class="nav-item"
+               th:classappend="${activePage} == 'grammars' ? 'active' : ''">
+                <i>📄</i> Ngữ pháp
+            </a>
+            <a href="/kanjis"
+               class="nav-item"
+               th:classappend="${activePage} == 'kanjis' ? 'active' : ''">
+                <i>文</i> Kanji
+            </a>
+            <a href="/radicals"
+               class="nav-item"
+               th:classappend="${activePage} == 'radicals' ? 'active' : ''">
+                <i>▦</i> Bộ
+            </a>
+            <a href="/lessons"
+               class="nav-item"
+               th:classappend="${activePage} == 'lessons' ? 'active' : ''">
+                <i>🎓</i> Bài học
+            </a>
+            <a href="/courses"
+               class="nav-item"
+               th:classappend="${activePage} == 'courses' ? 'active' : ''">
+                <i>📚</i> Khóa học
+            </a>
+
+            <!-- Admin link — only visible to ROLE_ADMIN users -->
+            <a href="/admin"
+               class="nav-item"
+               th:classappend="${activePage} == 'admin' ? 'active' : ''"
+               sec:authorize="hasRole('ADMIN')"
+               style="border-top:1px solid rgba(255,255,255,.15); margin-top:10px; padding-top:14px;">
+                <i>⚙️</i> Quản trị
+            </a>
+
+            <!-- Logout via inline POST form — no JS needed -->
+            <div class="nav-logout">
+                <form method="post" action="/logout" style="margin:0;padding:0;">
+                    <button type="submit" class="nav-item logout-btn">
+                        <i>🚪</i> Đăng xuất
+                    </button>
+                </form>
+            </div>
+        </nav>
+        
+        <!-- Global AI Chatbox Assistant -->
+        <div th:replace="~{fragments/chatbox :: chatbox}"></div>
+    </aside>
+</body>
+</html>

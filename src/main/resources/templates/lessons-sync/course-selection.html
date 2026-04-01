@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Lessons Course Selection')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar('courses')}"></nav>
+<main class="container py-5">
+  <h1>Course Selection</h1>
+  <p class="text-muted">Synced placeholder from Lessons/CourseSelection.cshtml.</p>
+  <div class="row" id="courseSelectionGrid">
+    <div class="col-12 text-muted">Loading courses...</div>
+  </div>
+</main>
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+fetch('/api/courses').then(r => r.json()).then(d => {
+  const items = d.data || [];
+  if (!items.length) {
+    document.getElementById('courseSelectionGrid').innerHTML = '<div class="col-12"><div class="alert alert-info">No courses available.</div></div>';
+    return;
+  }
+  document.getElementById('courseSelectionGrid').innerHTML = items.slice(0, 12).map(c => `
+    <div class="col-md-4 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">${c.title || '-'}</h5>
+          <p class="card-text">${c.description || ''}</p>
+          <a class="btn btn-primary btn-sm" href="/courses/${c.courseId}">Select</a>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}).catch(() => {
+  document.getElementById('courseSelectionGrid').innerHTML = '<div class="col-12"><div class="alert alert-danger">Cannot load courses.</div></div>';
+});
+</script>
+</body>
+</html>

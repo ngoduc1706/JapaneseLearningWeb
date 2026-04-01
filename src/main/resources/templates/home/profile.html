@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Ho so ca nhan')}"></head>
+<body>
+    <nav th:replace="~{fragments/common :: navbar('profile')}"></nav>
+
+    <main class="container py-5">
+        <h2 class="mb-4 text-danger">Ho so ca nhan</h2>
+
+        <div class="card p-4 shadow-sm" style="max-width: 560px; border-radius: 12px; background-color: #fff;">
+            <p><strong class="text-danger">Ten dang nhap:</strong> learner</p>
+            <p><strong class="text-danger">Email:</strong> learner@example.com</p>
+            <p><strong class="text-danger">Vai tro:</strong> User</p>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/common :: footer}"></footer>
+    <th:block th:replace="~{fragments/common :: scripts}"></th:block>
+</body>
+</html>

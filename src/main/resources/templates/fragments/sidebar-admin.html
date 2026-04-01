@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+    <!-- Admin Sidebar Fragment -->
+    <aside class="sidebar" th:fragment="sidebar-admin(activePage)" style="background: linear-gradient(180deg,#1a0a2e 0%,#2c1654 60%,#3a1870 100%);">
+
+        <!-- Logo -->
+        <div class="logo" style="border-bottom:1px solid rgba(255,255,255,.1); padding-bottom:16px; margin-bottom:8px;">
+            ⚙️ <span>Quản Trị</span>
+        </div>
+
+        <!-- Admin info -->
+        <div class="user-box" th:if="${session.userName}" style="background:rgba(255,255,255,.08); border-radius:10px; padding:10px 14px; margin-bottom:12px;">
+            <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:800;letter-spacing:.08em;margin-bottom:2px;">ADMIN</div>
+            <div class="user-name" th:text="${session.userName}" style="font-size:13px;font-weight:700;">Admin</div>
+        </div>
+
+        <nav>
+            <!-- Dashboard -->
+            <a href="/admin"
+               class="nav-item"
+               th:classappend="${activePage} == 'dashboard' ? 'active' : ''">
+                <i>📊</i> Tổng quan
+            </a>
+
+            <!-- Divider -->
+            <div style="font-size:10px;font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.35);padding:10px 16px 4px; margin-top:6px;">NỘI DUNG</div>
+
+            <a href="/courses"
+               class="nav-item"
+               th:classappend="${activePage} == 'courses' ? 'active' : ''">
+                <i>📚</i> Khóa học
+            </a>
+            <a href="/lessons"
+               class="nav-item"
+               th:classappend="${activePage} == 'lessons' ? 'active' : ''">
+                <i>🎓</i> Bài học
+            </a>
+            <a href="/kanjis"
+               class="nav-item"
+               th:classappend="${activePage} == 'kanjis' ? 'active' : ''">
+                <i>文</i> Kanji
+            </a>
+            <a href="/vocabularies"
+               class="nav-item"
+               th:classappend="${activePage} == 'vocabularies' ? 'active' : ''">
+                <i>📖</i> Từ vựng
+            </a>
+            <a href="/grammars"
+               class="nav-item"
+               th:classappend="${activePage} == 'grammars' ? 'active' : ''">
+                <i>📄</i> Ngữ pháp
+            </a>
+            <a href="/radicals"
+               class="nav-item"
+               th:classappend="${activePage} == 'radicals' ? 'active' : ''">
+                <i>🏣</i> Bộ thủ
+            </a>
+
+            <!-- Divider -->
+            <div style="font-size:10px;font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.35);padding:10px 16px 4px; margin-top:6px;">NGƯỜI DÙNG</div>
+
+            <a href="/admin#users"
+               class="nav-item"
+               th:classappend="${activePage} == 'users' ? 'active' : ''">
+                <i>👥</i> Người dùng
+            </a>
+
+            <!-- Bottom actions -->
+            <div style="margin-top:14px; border-top:1px solid rgba(255,255,255,.15); padding-top:12px;">
+                <a href="/dashboard" class="nav-item">
+                    <i>🏠</i> Về trang chính
+                </a>
+                <div class="nav-logout">
+                    <form method="post" action="/logout" style="margin:0;padding:0;">
+                        <button type="submit" class="nav-item logout-btn">
+                            <i>🚪</i> Đăng xuất
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Global AI Chatbox Assistant -->
+        <div th:replace="~{fragments/chatbox :: chatbox}"></div>
+    </aside>
+</body>
+</html>

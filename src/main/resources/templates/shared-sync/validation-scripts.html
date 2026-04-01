@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Validation Scripts')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar('home')}"></nav>
+<main class="container py-5" style="max-width: 640px;">
+  <h1>Validation Scripts Preview</h1>
+  <p class="text-muted">Synced placeholder from Shared/_ValidationScriptsPartial.cshtml.</p>
+  <form id="validateForm" novalidate>
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input id="validEmail" type="email" class="form-control" required>
+      <div class="invalid-feedback">Valid email is required.</div>
+    </div>
+    <button class="btn btn-primary" type="submit">Validate</button>
+  </form>
+</main>
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+document.getElementById('validateForm').addEventListener('submit', function(event) {
+  if (!this.checkValidity()) {
+    event.preventDefault();
+    event.stopPropagation();
+  } else {
+    event.preventDefault();
+    Notification.success('Validation passed.');
+  }
+  this.classList.add('was-validated');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Check User ID Storage')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar('profile')}"></nav>
+<main class="container py-5">
+  <h1>Check User ID Storage</h1>
+  <div class="card"><div class="card-body">
+    <p>User ID in localStorage: <strong id="uid">-</strong></p>
+    <button class="btn btn-primary" id="refreshBtn">Refresh</button>
+  </div></div>
+</main>
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+function loadUserId() {
+  document.getElementById('uid').textContent = localStorage.getItem('userId') || '(empty)';
+}
+document.getElementById('refreshBtn').addEventListener('click', loadUserId);
+loadUserId();
+</script>
+</body>
+</html>

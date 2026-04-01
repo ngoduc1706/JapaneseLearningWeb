@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments/layout :: head('Admin Panel')"></head>
+<body>
+<div th:replace="fragments/sidebar-admin :: sidebar-admin('dashboard')"></div>
+<main class="main-content">
+    <div th:replace="fragments/topbar :: topbar('/admin', 'Admin Panel', '#', 'Cài đặt')"></div>
+
+<style>
+.admin-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+.admin-hero { background: linear-gradient(135deg,#2c1654,#6c3da1);
+    border-radius: 18px; padding: 28px 32px; color: white; margin-bottom: 28px;
+    display: flex; align-items: center; gap: 20px; }
+.admin-hero-icon { font-size: 48px; }
+.admin-hero h1 { font-size: 24px; font-weight: 900; margin-bottom: 4px; }
+.admin-hero p  { font-size: 13px; opacity: .8; }
+
+/* Stats row */
+.stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 28px; }
+.stat-card { background: white; border-radius: 14px; padding: 20px 22px;
+    box-shadow: 0 4px 18px rgba(0,0,0,.08); text-align: center; }
+.stat-num  { font-size: 36px; font-weight: 900; color: #6c3da1; }
+.stat-lbl  { font-size: 12px; color: #999; font-weight: 700; margin-top: 4px; }
+
+/* Quick actions */
+.section-title { font-size: 16px; font-weight: 900; color: #333; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.quick-actions { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 32px; }
+.qa-btn { display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 18px 12px; border-radius: 14px; text-decoration: none; font-weight: 700;
+    font-size: 13px; transition: .2s; border: 2px solid transparent; }
+.qa-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+.qa-btn .qa-icon { font-size: 28px; }
+.qa-blue  { background: #e8f0ff; color: #448aff; border-color: #c5d8ff; }
+.qa-green { background: #e8fff4; color: #2ecc71; border-color: #c0f5da; }
+.qa-red   { background: #fff0f0; color: #e74c3c; border-color: #ffd0d0; }
+.qa-purple{ background: #f4eeff; color: #9c27b0; border-color: #e0c8ff; }
+
+/* Tables */
+.admin-table-wrap { background: white; border-radius: 14px; box-shadow: 0 4px 18px rgba(0,0,0,.08);
+    overflow: hidden; margin-bottom: 28px; }
+.admin-table-head { background: linear-gradient(135deg,#f8f5ff,#fff); padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+.admin-table-head h3 { font-size: 14px; font-weight: 900; color: #333; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.admin-table th { background: #fafafa; color: #888; font-size: 11px; font-weight: 800;
+    letter-spacing: .06em; text-transform: uppercase; padding: 10px 16px; text-align: left; }
+.admin-table td { padding: 12px 16px; border-top: 1px solid #f5f5f5; vertical-align: middle; }
+.admin-table tr:hover td { background: #fafaff; }
+.badge { display: inline-block; padding: 2px 10px; border-radius: 50px; font-size: 11px; font-weight: 700; }
+.badge-admin { background: #f4eeff; color: #9c27b0; }
+.badge-user  { background: #f0f0f0; color: #888; }
+.badge-paid  { background: #e8fff4; color: #2ecc71; }
+.badge-free  { background: #fff8e8; color: #f39c12; }
+
+/* Action buttons */
+.btn-sm { display: inline-block; padding: 5px 12px; border-radius: 8px; font-size: 12px;
+    font-weight: 700; cursor: pointer; border: none; text-decoration: none; transition: .15s; }
+.btn-sm:hover { opacity: .85; }
+.btn-edit    { background: #e8f0ff; color: #448aff; }
+.btn-delete  { background: #fff0f0; color: #e74c3c; }
+.btn-toggle  { background: #f4eeff; color: #9c27b0; }
+.btn-primary { background: linear-gradient(135deg,#6c3da1,#ae0070); color: white; }
+
+@media(max-width:700px){ .stats{grid-template-columns:1fr 1fr;} }
+</style>
+
+<div class="admin-page">
+
+    <!-- Hero banner -->
+    <div class="admin-hero">
+        <div class="admin-hero-icon">⚙️</div>
+        <div>
+            <h1>Admin Panel</h1>
+            <p>Quản lý toàn bộ hệ thống: khóa học, người dùng, bài học và nội dung.</p>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-num" th:text="${totalUsers}">0</div>
+            <div class="stat-lbl">👥 Người dùng</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num" th:text="${totalCourses}">0</div>
+            <div class="stat-lbl">📚 Khóa học</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num" th:text="${totalLessons}">0</div>
+            <div class="stat-lbl">🎓 Bài học</div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-title">🚀 Quản lý nhanh</div>
+    <div class="quick-actions">
+        <a href="/courses"  class="qa-btn qa-blue"><span class="qa-icon">📚</span>QL khóa học</a>
+        <a href="/lessons"  class="qa-btn qa-green"><span class="qa-icon">🎓</span>QL bài học</a>
+        <a href="/kanjis"   class="qa-btn qa-purple"><span class="qa-icon">文</span>QL Kanji</a>
+        <a href="/vocabularies" class="qa-btn qa-blue"><span class="qa-icon">📖</span>QL từ vựng</a>
+        <a href="/grammars" class="qa-btn qa-green"><span class="qa-icon">📄</span>QL ngữ pháp</a>
+        <a href="/radicals" class="qa-btn qa-purple"><span class="qa-icon">🏣</span>QL bộ thủ</a>
+    </div>
+
+    <!-- Courses table -->
+    <div class="section-title">📚 Danh sách khóa học</div>
+    <div class="admin-table-wrap">
+        <div class="admin-table-head">
+            <h3>Khóa học</h3>
+            <a href="/courses" class="btn-sm btn-primary">+ Đi đến trang QL Khóa Học</a>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th><th>Tên khóa học</th><th>Giá</th><th>Danh mục</th><th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="c : ${allCourses}">
+                    <td th:text="${c.courseId}">#</td>
+                    <td><strong th:text="${c.title}">Tên</strong></td>
+                    <td>
+                        <span th:if="${c.isFree}" class="badge badge-free">Miễn phí</span>
+                        <span th:unless="${c.isFree}" class="badge badge-paid"
+                              th:text="${#numbers.formatDecimal(c.price ?: 0, 0, 'COMMA', 0, 'POINT') + 'đ'}">0đ</span>
+                    </td>
+                    <td th:text="${c.category != null ? c.category.name : '—'}">—</td>
+                    <td style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <a th:href="@{'/courses/' + ${c.courseId}}" class="btn-sm btn-edit">👁 Xem chi tiết</a>
+                        <a th:href="@{'/courses'}" class="btn-sm btn-edit">✏️ QL Sửa</a>
+                        <form th:action="@{'/admin/courses/' + ${c.courseId} + '/delete'}" method="post"
+                              onsubmit="return confirm('Xóa khóa học này?')">
+                            <button type="submit" class="btn-sm btn-delete">🗑 Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(allCourses)}">
+                    <td colspan="5" style="text-align:center;color:#aaa;padding:24px;">Chưa có khóa học nào</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Users table -->
+    <div class="section-title">👥 Danh sách người dùng</div>
+    <div class="admin-table-wrap">
+        <div class="admin-table-head">
+            <h3>Người dùng</h3>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Email</th><th>Họ tên</th><th>Quyền</th><th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="u : ${allUsers}">
+                    <td th:text="${u.email}">email</td>
+                    <td th:text="${u.firstName + ' ' + u.lastName}">Tên</td>
+                    <td>
+                        <span th:if="${u.isAdmin}" class="badge badge-admin">⚙️ Admin</span>
+                        <span th:unless="${u.isAdmin}" class="badge badge-user">👤 User</span>
+                    </td>
+                    <td>
+                        <form th:action="@{'/admin/users/' + ${u.id} + '/toggle-admin'}" method="post"
+                              style="display:inline;">
+                            <button type="submit" class="btn-sm btn-toggle"
+                                    th:text="${u.isAdmin ? '↓ Bỏ admin' : '↑ Cấp admin'}">Toggle</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(allUsers)}">
+                    <td colspan="4" style="text-align:center;color:#aaa;padding:24px;">Chưa có người dùng</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</main>
+</body>
+</html>

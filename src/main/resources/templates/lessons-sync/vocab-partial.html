@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Lessons Vocabulary Partial')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar('courses')}"></nav>
+<main class="container py-5">
+  <h1>Vocabulary Partial</h1>
+  <p class="text-muted">Synced placeholder from Lessons/_VocabPartial.cshtml.</p>
+  <div id="vocabList" class="table-responsive"></div>
+</main>
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+fetch('/api/vocabularies').then(r => r.json()).then(d => {
+  const items = d.data || [];
+  if (!items.length) {
+    document.getElementById('vocabList').innerHTML = '<div class="alert alert-info">No vocabulary found.</div>';
+    return;
+  }
+  let html = '<table class="table table-striped"><thead><tr><th>Kanji</th><th>Hiragana</th><th>Meaning</th></tr></thead><tbody>';
+  items.slice(0, 20).forEach(x => {
+    html += `<tr><td>${x.kanji || ''}</td><td>${x.hiragana || ''}</td><td>${x.meaning || ''}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('vocabList').innerHTML = html;
+}).catch(() => {
+  document.getElementById('vocabList').innerHTML = '<div class="alert alert-danger">Cannot load vocabularies.</div>';
+});
+</script>
+</body>
+</html>

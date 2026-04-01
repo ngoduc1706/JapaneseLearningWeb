@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Kanji Match Test')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar('courses')}"></nav>
+<main class="container py-5">
+  <h1>Kanji Match Test</h1>
+  <p class="text-muted">Synced from KanjiCompose/MatchTest.cshtml.</p>
+  <div class="card"><div class="card-body">
+    <p class="mb-2">Pick the meaning for: <strong id="kanjiQuestion">日</strong></p>
+    <div id="options" class="d-flex gap-2 flex-wrap"></div>
+    <div id="matchResult" class="mt-3"></div>
+  </div></div>
+</main>
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+const question = { character: '日', answer: 'sun' };
+const choices = ['moon', 'water', 'sun', 'fire'];
+document.getElementById('kanjiQuestion').textContent = question.character;
+const wrap = document.getElementById('options');
+choices.forEach(choice => {
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-outline-primary';
+  btn.textContent = choice;
+  btn.addEventListener('click', () => {
+    const ok = choice === question.answer;
+    document.getElementById('matchResult').innerHTML = ok
+      ? '<div class="alert alert-success">Correct</div>'
+      : '<div class="alert alert-danger">Incorrect</div>';
+  });
+  wrap.appendChild(btn);
+});
+</script>
+</body>
+</html>

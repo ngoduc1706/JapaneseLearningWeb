@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Thanh toán thất bại')"></head>
+<body>
+<div th:replace="fragments/sidebar :: sidebar('courses')"></div>
+<main class="main-content">
+    <div th:replace="fragments/topbar :: topbar('/dashboard', 'Dashboard', '#', 'Cài đặt')"></div>
+
+    <div style="max-width: 680px; margin: 36px auto; padding: 20px; background: #fff; border-radius: 14px; box-shadow: 0 8px 24px rgba(15,23,42,.08); text-align: center;">
+        <div style="font-size: 42px; margin-bottom: 10px;">❌</div>
+        <h2 style="margin: 0 0 8px 0;">Thanh toán chưa hoàn tất</h2>
+        <p style="margin: 0 0 16px 0; color: #64748b;">Vui lòng thử lại hoặc chọn phương thức khác.</p>
+        <a href="/courses" style="text-decoration:none;padding:10px 14px;border-radius:10px;background:#f1f5f9;color:#0f172a;font-weight:700;">Về khóa học</a>
+    </div>
+</main>
+</body>
+</html>

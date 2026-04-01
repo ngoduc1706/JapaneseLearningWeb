@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Truy cập bị từ chối')"></head>
+<body class="bg-light">
+    <div th:replace="fragments/sidebar :: sidebar('lessons')"></div>
+    <main class="main-content">
+        <div th:replace="fragments/topbar :: topbar('/dashboard', 'Dashboard', '#', 'Cài đặt')"></div>
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8 text-center">
+                    <div class="card shadow-sm border-0 p-5">
+                        <div class="mb-4">
+                            <i class="fas fa-lock text-danger" style="font-size: 80px;"></i>
+                        </div>
+                        <h1 class="display-4 fw-bold text-dark mb-3">Truy cập bị từ chối</h1>
+                        <p class="lead text-muted mb-4" th:text="${error != null ? error : 'Bạn chưa đăng ký khóa học này để xem nội dung.'}">
+                            Bạn chưa đăng ký khóa học này để xem nội dung.
+                        </p>
+                        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                            <a href="/lessons" class="btn btn-primary btn-lg px-4 gap-3">
+                                <i class="fas fa-book-open me-2"></i> Danh sách khóa học
+                            </a>
+                            <a href="/dashboard" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="fas fa-home me-2"></i> Về trang chủ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div th:replace="fragments/layout :: scripts"></div>
+</body>
+</html>

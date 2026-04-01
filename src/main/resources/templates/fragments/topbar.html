@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Fragment: Top Navigation Bar -->
+    <div class="top-nav" th:fragment="topbar(primaryLink, primaryText, secondaryLink, secondaryText)">
+        <div class="nav-left">
+            <a href="/" class="btn-home-blue">🏠 Trang chủ</a>
+            <a th:href="${primaryLink}" class="nav-text-link" th:text="${primaryText}">Primary</a>
+            <a th:href="${secondaryLink}" class="nav-text-link" th:text="${secondaryText}">Secondary</a>
+        </div>
+        <div class="nav-right">
+            <span style="font-size: 14px; color: var(--text-main);" 
+                  th:text="${'Xin chào ' + session.userName}">Hello</span>
+        </div>
+    </div>
+</body>
+</html>

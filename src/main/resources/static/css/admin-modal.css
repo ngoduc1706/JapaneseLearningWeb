@@ -1,0 +1,175 @@
+/* ── PREMIUM ADMIN MODAL SHARED STYLES ── */
+.pa-modal-box {
+    background: #ffffff;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 550px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0,0,0,0.05);
+    animation: paModalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 0;
+}
+@keyframes paModalIn {
+    from { transform: scale(0.95) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.pa-modal-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    padding: 24px 30px 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.pa-modal-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #1a1a2e;
+    margin: 0;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.pa-btn-close {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #f0f0f5;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #666;
+    transition: 0.2s;
+}
+.pa-btn-close:hover { background: #e0e0e8; color: #e53935; transform: rotate(90deg); }
+
+.pa-modal-body {
+    padding: 24px 30px;
+}
+
+.pa-form-group {
+    margin-bottom: 20px;
+}
+.pa-form-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.pa-form-control {
+    width: 100%;
+    background: #f8f9fc;
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+    transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+.pa-form-control:focus {
+    background: #ffffff;
+    border-color: #6c63ff;
+    box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.15);
+    outline: none;
+}
+.pa-form-control::placeholder { color: #aaa; font-weight: 500; }
+
+.pa-form-control-jp {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 18px;
+}
+
+.pa-modal-footer {
+    padding: 20px 30px 30px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+.pa-btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s;
+    border: none;
+}
+.pa-btn-light {
+    background: #f0f0f5;
+    color: #555;
+}
+.pa-btn-light:hover { background: #e4e4eb; color: #222; }
+.pa-btn-primary {
+    background: linear-gradient(135deg, #6c3da1 0%, #ae0070 100%);
+    color: white;
+    box-shadow: 0 8px 20px rgba(174, 0, 112, 0.25);
+}
+.pa-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(174, 0, 112, 0.35);
+}
+
+.pa-switch-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8f9fc;
+    padding: 12px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    user-select: none;
+}
+.pa-switch {
+    width: 44px; height: 24px;
+    background: #cbd5e1;
+    border-radius: 50px;
+    position: relative;
+    transition: 0.3s;
+    flex-shrink: 0;
+}
+.pa-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+input[type="checkbox"].pa-switch-input {
+    display: none;
+}
+input[type="checkbox"].pa-switch-input:checked + .pa-switch {
+    background: #10b981;
+}
+input[type="checkbox"].pa-switch-input:checked + .pa-switch::after {
+    transform: translateX(20px);
+}
+.pa-switch-label {
+    font-size: 14px; font-weight: 700; color: #222;
+}
+
+/* Flex row helper */
+.pa-row {
+    display: flex;
+    gap: 16px;
+}
+.pa-col {
+    flex: 1;
+}

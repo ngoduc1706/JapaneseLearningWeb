@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Practice Kanji')}"></head>
+<body>
+    <nav th:replace="~{fragments/common :: navbar('courses')}"></nav>
+
+    <main class="container py-5">
+        <h2 class="mb-4">Practice Kanji Stroke</h2>
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+            <input type="text" id="kanjiInput" placeholder="Nhap chu Kanji" maxlength="1" class="form-control" style="width: 180px;">
+            <button class="btn btn-primary" id="loadKanjiBtn">Hien thi net</button>
+        </div>
+
+        <svg id="kanjiSvg" width="240" height="240" style="border: 1px solid #ccc; margin-top: 16px;"></svg>
+    </main>
+
+    <footer th:replace="~{fragments/common :: footer}"></footer>
+    <th:block th:replace="~{fragments/common :: scripts}"></th:block>
+    <script>
+        document.getElementById('loadKanjiBtn').addEventListener('click', loadKanji);
+
+        async function loadKanji() {
+            const character = document.getElementById('kanjiInput').value.trim();
+            const svg = document.getElementById('kanjiSvg');
+            svg.innerHTML = '';
+
+            if (!character) {
+                Notification.warning('Vui long nhap mot chu Kanji.');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/KanjiStroke/GetStrokeData?character=${encodeURIComponent(character)}`);
+                const json = await res.json();
+
+                if (!json.success) {
+                    Notification.error(json.message || 'Khong tim thay du lieu net viet.');
+                    return;
+                }
+
+                let delay = 0;
+                json.data.strokes.forEach((stroke, index) => {
+                    setTimeout(() => {
+                        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        path.setAttribute('d', stroke.d);
+                        path.setAttribute('stroke', stroke.color || '#000');
+                        path.setAttribute('fill', 'none');
+                        path.setAttribute('stroke-width', '2');
+                        path.setAttribute('stroke-linecap', 'round');
+                        path.setAttribute('stroke-linejoin', 'round');
+
+                        const length = path.getTotalLength();
+                        path.style.strokeDasharray = length;
+                        path.style.strokeDashoffset = length;
+                        path.style.transition = 'stroke-dashoffset 0.6s ease';
+                        svg.appendChild(path);
+
+                        requestAnimationFrame(() => {
+                            path.style.strokeDashoffset = '0';
+                        });
+
+                        const start = getStartPoint(stroke.d);
+                        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        text.setAttribute('x', start.x);
+                        text.setAttribute('y', start.y);
+                        text.setAttribute('fill', 'red');
+                        text.setAttribute('font-size', '8');
+                        text.textContent = String(index + 1);
+                        svg.appendChild(text);
+                    }, delay);
+                    delay += 700;
+                });
+            } catch (error) {
+                Notification.error(`Loi khi tai du lieu net viet: ${error.message}`);
+            }
+        }
+
+        function getStartPoint(d) {
+            const match = d.match(/M\s*([\d.]+)[,\s]+([\d.]+)/i);
+            if (match) {
+                return { x: parseFloat(match[1]), y: parseFloat(match[2]) };
+            }
+            return { x: 5, y: 5 };
+        }
+    </script>
+</body>
+</html>

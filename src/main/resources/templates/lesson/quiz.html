@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - Japanese Learning Web</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">📚 Japanese Learning Web</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h1 id="quizTitle">Quiz</h1>
+
+                <!-- Progress Bar -->
+                <div class="progress mb-4" style="height: 25px;">
+                    <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%">
+                        <span id="progressText">0%</span>
+                    </div>
+                </div>
+
+                <!-- Question Container -->
+                <div id="questionsContainer" class="mb-4">
+                    <p class="text-center">Loading questions...</p>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex gap-2">
+                    <button class="btn btn-secondary" onclick="prevQuestion()" id="prevBtn" disabled>← Previous</button>
+                    <button class="btn btn-primary" onclick="nextQuestion()" id="nextBtn">Next →</button>
+                    <button class="btn btn-success" onclick="submitQuiz()" id="submitBtn" style="display:none;">Submit Quiz</button>
+                    <button class="btn btn-outline-primary" onclick="reloadRandomQuiz()" id="reloadBtn">Làm bộ đề mới</button>
+                </div>
+
+                <div id="resultContainer" class="mt-4"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-4 mt-5">
+        <p>&copy; 2026 Japanese Learning Web</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const quizId = window.location.pathname.split('/').pop();
+        const QUIZ_PROGRESS_KEY = `quiz-progress-${quizId}`;
+        let currentQuestionIndex = 0;
+        let questions = [];
+        let answersByQuestionId = {};
+
+        async function loadQuiz(forceNew = false) {
+            try {
+                const detailResponse = await fetch(`/api/quizzes/${quizId}/details`);
+                const detailData = await detailResponse.json();
+                if (detailData.success && detailData.data && detailData.data.quiz) {
+                    document.getElementById('quizTitle').textContent = detailData.data.quiz.title;
+                }
+
+                if (!forceNew) {
+                    const saved = tryLoadProgress();
+                    if (saved) {
+                        questions = saved.questions || [];
+                        answersByQuestionId = saved.answersByQuestionId || {};
+                        currentQuestionIndex = Math.max(0, Math.min(saved.currentQuestionIndex || 0, Math.max(questions.length - 1, 0)));
+                        document.getElementById('resultContainer').innerHTML = '<div class="alert alert-info">Đã khôi phục tiến độ làm quiz gần nhất.</div>';
+                        if (questions.length > 0) {
+                            displayQuestion(currentQuestionIndex);
+                            return;
+                        }
+                    }
+                }
+
+                const randomResponse = await fetch(`/api/quizzes/${quizId}/random?limit=20`);
+                const randomData = await randomResponse.json();
+                if (!randomResponse.ok || !randomData.success) {
+                    throw new Error(randomData.message || 'Không tải được bộ câu hỏi');
+                }
+
+                questions = randomData.data || [];
+                answersByQuestionId = {};
+                currentQuestionIndex = 0;
+                document.getElementById('resultContainer').innerHTML = '';
+
+                if (questions.length > 0) {
+                    displayQuestion(0);
+                    saveProgress();
+                } else {
+                    document.getElementById('questionsContainer').innerHTML = '<p class="text-center text-muted">Không có câu hỏi trong bài quiz.</p>';
+                }
+            } catch (error) {
+                document.getElementById('questionsContainer').innerHTML = `<p class="text-danger text-center">${error.message}</p>`;
+            }
+        }
+
+        function displayQuestion(index) {
+            if (index >= questions.length) {
+                document.getElementById('questionsContainer').innerHTML = '<p class="text-center text-success">Quiz completed!</p>';
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('prevBtn').style.display = 'none';
+                document.getElementById('submitBtn').style.display = 'inline-block';
+                return;
+            }
+
+            const question = questions[index];
+            let html = `
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Question ${index + 1} / ${questions.length}</h5>
+                        <p class="card-text"><strong>${question.text}</strong></p>
+                        <div class="options">
+            `;
+
+            question.options.forEach((option, optIndex) => {
+                const checked = answersByQuestionId[question.questionId] === option.optionId ? 'checked' : '';
+                html += `
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="option" 
+                               id="option${optIndex}" value="${option.optionId}" ${checked}
+                               onchange="selectAnswer(${question.questionId}, ${option.optionId})">
+                        <label class="form-check-label" for="option${optIndex}">
+                            ${option.text}
+                        </label>
+                    </div>
+                `;
+            });
+
+            html += `
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('questionsContainer').innerHTML = html;
+
+            // Update progress
+            const progress = ((index + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '%';
+
+            // Update buttons
+            document.getElementById('prevBtn').disabled = index === 0;
+            document.getElementById('nextBtn').style.display = index === questions.length - 1 ? 'none' : 'inline-block';
+            document.getElementById('submitBtn').style.display = index === questions.length - 1 ? 'inline-block' : 'none';
+
+            currentQuestionIndex = index;
+        }
+
+        function selectAnswer(questionId, optionId) {
+            answersByQuestionId[questionId] = optionId;
+            saveProgress();
+        }
+
+        function nextQuestion() {
+            saveProgress();
+            displayQuestion(currentQuestionIndex + 1);
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                saveProgress();
+                displayQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        async function submitQuiz() {
+            try {
+                const selectedAnswers = questions.map(q => {
+                    const selected = answersByQuestionId[q.questionId];
+                    return selected === undefined ? null : selected;
+                });
+
+                const payload = {
+                    quizId: Number(quizId),
+                    selectedAnswers: selectedAnswers
+                };
+
+                const submitResponse = await fetch('/api/quizzes/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const submitData = await submitResponse.json();
+
+                if (!submitResponse.ok || !submitData.success) {
+                    throw new Error(submitData.message || 'Nộp bài thất bại');
+                }
+
+                const score = submitData.data;
+
+                const reviewResponse = await fetch('/api/quizzes/review-wrong', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const reviewData = await reviewResponse.json();
+
+                let wrongHtml = '';
+                if (reviewResponse.ok && reviewData.success && reviewData.data && reviewData.data.length > 0) {
+                    wrongHtml = `
+                        <div class="card mt-3 border-warning">
+                            <div class="card-body">
+                                <h5 class="card-title text-warning">Câu sai cần ôn lại</h5>
+                                <ul class="mb-0">
+                                    ${reviewData.data.map(item => `
+                                        <li class="mb-2">
+                                            <strong>${item.questionText}</strong><br>
+                                            Bạn chọn: <span class="text-danger">${item.selectedOptionText}</span><br>
+                                            Đáp án đúng: <span class="text-success">${item.correctOptionText}</span><br>
+                                            <small class="text-muted">Giải thích: Câu này yêu cầu chọn phương án chính xác trong bộ đáp án chuẩn. Từ khóa đúng là <strong>${item.correctOptionText}</strong>.</small>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const answerSummaryHtml = `
+                    <div class="card mt-3 border-info">
+                        <div class="card-body">
+                            <h5 class="card-title text-info">Giải thích đáp án từng câu</h5>
+                            <ol class="mb-0">
+                                ${questions.map(q => {
+                                    const selectedId = answersByQuestionId[q.questionId];
+                                    const selectedOption = (q.options || []).find(o => o.optionId === selectedId);
+                                    const correctOption = (q.options || []).find(o => o.isCorrect === true);
+                                    const correct = selectedOption && correctOption && selectedOption.optionId === correctOption.optionId;
+                                    return `
+                                        <li class="mb-2">
+                                            <strong>${q.text}</strong><br>
+                                            Bạn chọn: <span class="${correct ? 'text-success' : 'text-danger'}">${selectedOption ? selectedOption.text : '(Chưa chọn)'}</span><br>
+                                            Đáp án chuẩn: <span class="text-success">${correctOption ? correctOption.text : '(Không xác định)'}</span><br>
+                                            <small class="text-muted">Giải thích: ${correct ? 'Bạn đã chọn đúng đáp án chuẩn.' : 'Bạn cần ôn lại điểm khác biệt giữa phương án đã chọn và đáp án đúng.'}</small>
+                                        </li>
+                                    `;
+                                }).join('')}
+                            </ol>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('resultContainer').innerHTML = `
+                    <div class="alert alert-success">
+                        <h4>Kết quả: ${score.score}/${100}</h4>
+                        <p class="mb-1">Đúng: ${score.correctAnswers}/${score.totalQuestions}</p>
+                        <p class="mb-1">Tỷ lệ: ${Math.round(score.percentage)}%</p>
+                        <p class="mb-0">Trạng thái: <strong>${score.passStatus}</strong></p>
+                    </div>
+                    ${wrongHtml}
+                    ${answerSummaryHtml}
+                `;
+
+                clearProgress();
+            } catch (error) {
+                document.getElementById('resultContainer').innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+            }
+        }
+
+        function reloadRandomQuiz() {
+            clearProgress();
+            loadQuiz(true);
+        }
+
+        function saveProgress() {
+            try {
+                const payload = {
+                    questions,
+                    answersByQuestionId,
+                    currentQuestionIndex,
+                    savedAt: Date.now()
+                };
+                localStorage.setItem(QUIZ_PROGRESS_KEY, JSON.stringify(payload));
+            } catch (e) {
+                // Ignore storage errors.
+            }
+        }
+
+        function tryLoadProgress() {
+            try {
+                const raw = localStorage.getItem(QUIZ_PROGRESS_KEY);
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                if (!parsed || !Array.isArray(parsed.questions)) {
+                    return null;
+                }
+                return parsed;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function clearProgress() {
+            localStorage.removeItem(QUIZ_PROGRESS_KEY);
+        }
+
+        loadQuiz(false);
+    </script>
+</body>
+</html>

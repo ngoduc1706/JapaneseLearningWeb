@@ -1,0 +1,17 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Kanji Radical Create')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar('courses')}"></nav>
+<main class="container py-5">
+  <h1>Kanji Radical - Create</h1>
+  <div class="card"><div class="card-body">
+    <input class="form-control mb-2" placeholder="Radical" />
+    <input class="form-control mb-2" placeholder="Meaning" />
+    <button class="btn btn-success">Save</button>
+  </div></div>
+</main>
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+</body>
+</html>

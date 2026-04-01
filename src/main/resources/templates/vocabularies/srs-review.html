@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head(${pageTitle})"></head>
+<body>
+<div th:replace="fragments/sidebar :: sidebar('vocabularies')"></div>
+<main class="main-content">
+    <div th:replace="fragments/topbar :: topbar('/dashboard', 'Dashboard', '#', 'Cài đặt')"></div>
+
+    <div class="container" style="max-width: 980px; margin: 0 auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
+            <h2 style="margin:0;">Ôn tập SRS chuyên biệt</h2>
+            <div style="display:flex;gap:8px;">
+                <a href="/vocabularies" style="text-decoration:none;padding:8px 12px;border-radius:8px;border:1px solid #cbd5e1;color:#334155;font-weight:700;">Về từ vựng</a>
+                <button onclick="reloadDueItems()" style="padding:8px 12px;border-radius:8px;border:1px solid #99f6e4;background:#f0fdfa;color:#0f766e;font-weight:700;">Làm mới danh sách</button>
+            </div>
+        </div>
+
+        <div id="summaryBar" style="background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.05);margin-bottom:16px;">
+            <strong>Số từ đến hạn:</strong> <span id="dueCount">0</span>
+            <span style="margin-left:16px;"><strong>Đang ôn:</strong> <span id="currentIndex">0/0</span></span>
+        </div>
+
+        <div id="emptyState" style="display:none;background:#fff;border-radius:14px;padding:36px;text-align:center;color:#64748b;box-shadow:0 2px 10px rgba(0,0,0,.05);">
+            <div style="font-size:40px;margin-bottom:8px;">✅</div>
+            <h3 style="margin:0 0 6px 0;">Không có từ nào đến hạn ôn tập</h3>
+            <p style="margin:0;">Bạn đã hoàn thành các mục SRS cần ôn hôm nay.</p>
+        </div>
+
+        <div id="reviewCard" style="display:none;background:#fff;border-radius:16px;box-shadow:0 6px 22px rgba(0,0,0,.08);overflow:hidden;">
+            <div style="background:linear-gradient(135deg,#0f766e,#0d9488);color:#fff;padding:22px;">
+                <div id="kanjiText" style="font-size:52px;font-weight:800;line-height:1;">水</div>
+                <div id="hiraganaText" style="opacity:.95;margin-top:8px;font-size:20px;">みず</div>
+                <div id="meaningText" style="opacity:.9;margin-top:10px;">Nghĩa</div>
+            </div>
+
+            <div style="padding:18px 22px;">
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+                    <span style="font-size:13px;background:#f1f5f9;padding:4px 10px;border-radius:999px;">SRS Lv: <strong id="srsLevel">0</strong></span>
+                    <span style="font-size:13px;background:#fef3c7;padding:4px 10px;border-radius:999px;">Mastery: <strong id="masteryPercent">0%</strong></span>
+                    <span style="font-size:13px;background:#e0f2fe;padding:4px 10px;border-radius:999px;">Lần ôn: <strong id="reviewCount">0</strong></span>
+                </div>
+
+                <p style="margin:0 0 10px 0;color:#334155;font-weight:600;">Bạn nhớ từ này ở mức nào? (0-5)</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="q-btn" onclick="submitQuality(0)">0</button>
+                    <button class="q-btn" onclick="submitQuality(1)">1</button>
+                    <button class="q-btn" onclick="submitQuality(2)">2</button>
+                    <button class="q-btn" onclick="submitQuality(3)">3</button>
+                    <button class="q-btn" onclick="submitQuality(4)">4</button>
+                    <button class="q-btn" onclick="submitQuality(5)">5</button>
+                </div>
+
+                <div id="reviewStatus" style="margin-top:12px;font-size:13px;color:#0f766e;font-weight:700;"></div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+.q-btn{min-width:42px;height:36px;border:1px solid #99f6e4;background:#ecfdf5;color:#065f46;border-radius:8px;font-weight:800;cursor:pointer}
+.q-btn:hover{background:#d1fae5}
+</style>
+
+<script>
+let dueItems = [];
+let current = 0;
+let queueMode = 'due';
+
+function renderCurrentItem() {
+    const emptyState = document.getElementById('emptyState');
+    const reviewCard = document.getElementById('reviewCard');
+    const dueCount = document.getElementById('dueCount');
+    const currentIndex = document.getElementById('currentIndex');
+
+    dueCount.textContent = dueItems.length;
+    currentIndex.textContent = dueItems.length === 0 ? '0/0' : `${current + 1}/${dueItems.length}`;
+
+    if (!dueItems.length || current >= dueItems.length) {
+        const emptyTitle = document.querySelector('#emptyState h3');
+        const emptyDesc = document.querySelector('#emptyState p');
+        if (emptyTitle && emptyDesc) {
+            emptyTitle.textContent = 'Không có từ nào cần ôn ngay lúc này';
+            emptyDesc.textContent = 'Bạn có thể quay lại trang từ vựng để thêm mục yêu thích rồi luyện nhanh.';
+        }
+        emptyState.style.display = 'block';
+        reviewCard.style.display = 'none';
+        return;
+    }
+
+    emptyState.style.display = 'none';
+    reviewCard.style.display = 'block';
+
+    const item = dueItems[current];
+    document.getElementById('kanjiText').textContent = item.kanji || '-';
+    document.getElementById('hiraganaText').textContent = item.hiragana || '-';
+    document.getElementById('meaningText').textContent = item.meaning || '-';
+    document.getElementById('srsLevel').textContent = item.srsLevel ?? 0;
+    document.getElementById('masteryPercent').textContent = `${item.masteryPercent ?? 0}%`;
+    document.getElementById('reviewCount').textContent = item.reviewCount ?? 0;
+    document.getElementById('reviewStatus').textContent = '';
+
+    const summaryBar = document.getElementById('summaryBar');
+    const modeLabel = queueMode === 'due'
+        ? 'Đang hiển thị danh sách đến hạn.'
+        : 'Chưa có từ đến hạn, đang hiển thị từ yêu thích để luyện trước.';
+    summaryBar.setAttribute('data-mode', queueMode);
+    if (!summaryBar.querySelector('.mode-note')) {
+        const note = document.createElement('span');
+        note.className = 'mode-note';
+        note.style.marginLeft = '16px';
+        note.style.color = '#0f766e';
+        note.style.fontWeight = '700';
+        summaryBar.appendChild(note);
+    }
+    summaryBar.querySelector('.mode-note').textContent = modeLabel;
+}
+
+async function reloadDueItems() {
+    try {
+        const response = await fetch('/api/vocabularies/srs/due');
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Không tải được danh sách SRS đến hạn');
+        }
+
+        dueItems = result.data || [];
+        queueMode = 'due';
+
+        if (!dueItems.length) {
+            const favoritesResponse = await fetch('/api/vocabularies/favorites');
+            const favoritesResult = await favoritesResponse.json();
+            if (favoritesResponse.ok && favoritesResult.success) {
+                dueItems = favoritesResult.data || [];
+                if (dueItems.length) {
+                    queueMode = 'favorites';
+                }
+            }
+        }
+
+        current = 0;
+        renderCurrentItem();
+    } catch (e) {
+        document.getElementById('reviewStatus').textContent = e.message;
+    }
+}
+
+async function submitQuality(quality) {
+    if (!dueItems.length || current >= dueItems.length) return;
+
+    const currentItem = dueItems[current];
+    try {
+        const response = await fetch(`/api/vocabularies/${currentItem.vocabularyId}/srs/review`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quality })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Cập nhật SRS thất bại');
+        }
+
+        document.getElementById('reviewStatus').textContent =
+            `Đã lưu: Lv.${result.data.srsLevel} | Mastery ${result.data.masteryPercent}%`;
+
+        dueItems.splice(current, 1);
+        if (current >= dueItems.length) current = Math.max(0, dueItems.length - 1);
+        setTimeout(renderCurrentItem, 300);
+    } catch (e) {
+        document.getElementById('reviewStatus').textContent = e.message;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', reloadDueItems);
+</script>
+</body>
+</html>

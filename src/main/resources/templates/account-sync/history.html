@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Account History')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar('my-courses')}"></nav>
+<main class="container py-5">
+  <h1>Account History</h1>
+  <p class="text-muted">Synced placeholder from Account/History.cshtml.</p>
+  <div class="card"><div class="card-body" id="historyContainer">Loading history...</div></div>
+</main>
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+const userId = localStorage.getItem('userId') || '1';
+fetch(`/api/enrollment/${userId}`).then(r=>r.json()).then(d=>{
+ const items = d.data || [];
+ if(!items.length){ document.getElementById('historyContainer').innerHTML = 'No history yet.'; return; }
+ document.getElementById('historyContainer').innerHTML = items.map(x => `<div class="border rounded p-2 mb-2">Course ID: ${x.course?.courseId || '-'} | Status: ${x.status || '-'}</div>`).join('');
+}).catch(()=>{document.getElementById('historyContainer').innerHTML='Cannot load history.';});
+</script>
+</body>
+</html>

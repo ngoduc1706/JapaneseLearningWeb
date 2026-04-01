@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Kanji Radical Index')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar('courses')}"></nav>
+<main class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Kanji Radical - Index</h1>
+    <a class="btn btn-success" th:href="@{/sync/kanji-radical/create}">Create</a>
+  </div>
+  <div class="card"><div class="card-body">
+    <p class="text-muted">Synced from KanjiRadical/Index.cshtml.</p>
+    <div id="radicalList">Loading...</div>
+  </div></div>
+</main>
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+const placeholder = [
+  { id: 1, radical: '氵', meaning: 'water' },
+  { id: 2, radical: '亻', meaning: 'person' }
+];
+document.getElementById('radicalList').innerHTML = placeholder.map(x =>
+  `<div class="border rounded p-2 mb-2">${x.id}. ${x.radical} - ${x.meaning}
+   <a class="btn btn-sm btn-primary ms-2" href="/sync/kanji-radical/details?id=${x.id}">Details</a>
+   <a class="btn btn-sm btn-secondary ms-1" href="/sync/kanji-radical/edit?id=${x.id}">Edit</a>
+   <a class="btn btn-sm btn-danger ms-1" href="/sync/kanji-radical/delete?id=${x.id}">Delete</a>
+  </div>`).join('');
+</script>
+</body>
+</html>

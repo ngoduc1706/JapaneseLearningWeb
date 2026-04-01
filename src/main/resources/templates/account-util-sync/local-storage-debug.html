@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Local Storage Debug')}"></head>
+<body>
+<nav th:replace="~{fragments/common :: navbar('profile')}"></nav>
+<main class="container py-5">
+  <h1>Local Storage Debug</h1>
+  <div class="card"><div class="card-body">
+    <button class="btn btn-secondary mb-3" id="reloadBtn">Reload</button>
+    <pre id="storageDump" class="p-3 bg-light border rounded"></pre>
+  </div></div>
+</main>
+<footer th:replace="~{fragments/common :: footer}"></footer>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+function dumpStorage() {
+  const payload = {};
+  for (let i = 0; i < localStorage.length; i += 1) {
+    const key = localStorage.key(i);
+    payload[key] = localStorage.getItem(key);
+  }
+  document.getElementById('storageDump').textContent = JSON.stringify(payload, null, 2);
+}
+document.getElementById('reloadBtn').addEventListener('click', dumpStorage);
+dumpStorage();
+</script>
+</body>
+</html>

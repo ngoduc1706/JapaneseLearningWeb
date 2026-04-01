@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head(${pageTitle})"></head>
+<body>
+<div th:replace="fragments/sidebar :: sidebar('courses')"></div>
+<main class="main-content">
+    <div th:replace="fragments/topbar :: topbar('/dashboard', 'Dashboard', '#', 'Cài đặt')"></div>
+
+    <div style="max-width: 760px; margin: 28px auto; padding: 0 16px;">
+        <div style="background: #ffffff; border-radius: 16px; box-shadow: 0 8px 26px rgba(15, 23, 42, 0.08); overflow: hidden;">
+            <div th:style="${success} ? 'background:linear-gradient(135deg,#059669,#10b981);color:white;padding:18px 20px;' : 'background:linear-gradient(135deg,#dc2626,#f97316);color:white;padding:18px 20px;'">
+                <h2 style="margin:0;font-size:24px;" th:text="${success} ? 'Thanh toán thành công' : 'Thanh toán chưa thành công'">Kết quả thanh toán</h2>
+                <p style="margin:8px 0 0 0;opacity:.95;" th:text="${message}">Thông điệp kết quả</p>
+            </div>
+
+            <div style="padding:20px;display:grid;gap:10px;">
+                <div style="display:flex;justify-content:space-between;gap:12px;">
+                    <strong style="color:#334155;">Mã kết quả</strong>
+                    <span th:text="${resultCode}">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:12px;" th:if="${transactionId != null}">
+                    <strong style="color:#334155;">Mã giao dịch</strong>
+                    <span th:text="${transactionId}">PMT-1</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:12px;" th:if="${courseId != null}">
+                    <strong style="color:#334155;">Khóa học</strong>
+                    <span>#<span th:text="${courseId}">1</span></span>
+                </div>
+
+                <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+                    <a th:href="${redirectUrl != null} ? ${redirectUrl} : '/dashboard'"
+                       style="text-decoration:none;padding:10px 14px;border-radius:10px;font-weight:700;border:1px solid #94a3b8;color:#334155;">Tiếp tục</a>
+                    <a href="/courses" style="text-decoration:none;padding:10px 14px;border-radius:10px;font-weight:700;background:#f1f5f9;color:#0f172a;">Về danh sách khóa học</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

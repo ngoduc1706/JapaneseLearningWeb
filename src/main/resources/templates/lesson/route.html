@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head(${pageTitle})"></head>
+<body>
+<div th:replace="fragments/sidebar :: sidebar('lessons')"></div>
+<main class="main-content">
+    <div th:replace="fragments/topbar :: topbar('/dashboard', 'Dashboard', '#', 'Cài đặt')"></div>
+    <div class="container" style="max-width: 1100px; margin: 0 auto;">
+
+        <div style="margin-bottom: 20px;">
+            <a href="/lessons" style="text-decoration: none; color: var(--primary-color); font-weight: 700;">← Quay lại cổng bài học</a>
+        </div>
+
+        <section style="background: linear-gradient(135deg,#0f766e 0%,#115e59 100%); color: #fff; border-radius: 16px; padding: 24px; margin-bottom: 22px;">
+            <div style="display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: center;">
+                <div>
+                    <h2 style="margin: 0 0 8px 0; font-size: 24px;" th:text="${course.title}">Lộ trình khóa học</h2>
+                    <p style="margin: 0; opacity: .9;">Tiến theo thứ tự bài học để tối ưu hiệu quả ghi nhớ.</p>
+                </div>
+                <div style="min-width: 200px;">
+                    <div style="font-size: 13px; opacity: .9; margin-bottom: 6px;">Tiến độ hiện tại</div>
+                    <div style="height: 10px; background: rgba(255,255,255,.3); border-radius: 999px; overflow: hidden;">
+                        <div th:style="'height:100%;background:#34d399;width:' + ${progressPercent} + '%;'"></div>
+                    </div>
+                    <div style="font-size: 13px; margin-top: 6px;" th:text="${currentOrder} + '/' + ${totalLessons} + ' bài (' + ${progressPercent} + '%)'">0/0 bài</div>
+                </div>
+            </div>
+        </section>
+
+        <section th:if="${currentLesson != null}" style="background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 22px; box-shadow: 0 4px 16px rgba(0,0,0,.06);">
+            <div style="font-size: 12px; color: #0f766e; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px;">Bài hiện tại</div>
+            <h3 style="margin: 0 0 8px 0;" th:text="${currentLesson.title}">Bài hiện tại</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a th:href="@{'/lessons/' + ${currentLesson.lessonId}}" style="padding: 10px 16px; border-radius: 8px; background: #0f766e; color: #fff; text-decoration: none; font-weight: 700;">Học bài này</a>
+                <a th:if="${nextLesson != null}" th:href="@{'/courses/' + ${course.courseId} + '/route?currentLessonId=' + ${nextLesson.lessonId}}" style="padding: 10px 16px; border-radius: 8px; border: 1px solid #0f766e; color: #0f766e; text-decoration: none; font-weight: 700;">Chuyển sang bài tiếp theo</a>
+            </div>
+        </section>
+
+        <section style="display: grid; gap: 12px;">
+            <article th:each="lesson, iter : ${lessons}" style="background: #fff; border-radius: 12px; padding: 16px 18px; box-shadow: 0 2px 10px rgba(0,0,0,.05); border-left: 4px solid #cbd5e1;">
+                <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;" th:text="'Bài ' + ${iter.count}">Bài 1</div>
+                        <h4 style="margin: 0 0 4px 0;" th:text="${lesson.title}">Tiêu đề bài học</h4>
+                        <p style="margin: 0; color: #64748b; font-size: 13px;" th:text="${#strings.abbreviate(lesson.content, 100)}">Mô tả</p>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span th:if="${currentLesson != null and lesson.lessonId == currentLesson.lessonId}" style="font-size: 12px; font-weight: 700; color: #0f766e; background: #ccfbf1; padding: 4px 10px; border-radius: 999px;">Hiện tại</span>
+                        <a th:href="@{'/lessons/' + ${lesson.lessonId}}" style="padding: 8px 14px; border-radius: 8px; background: #0f766e; color: #fff; text-decoration: none; font-weight: 700; font-size: 13px;">Vào học</a>
+                    </div>
+                </div>
+            </article>
+
+            <div th:if="${lessons == null or lessons.isEmpty()}" style="background:#fff;border-radius:12px;padding:24px;text-align:center;color:#64748b;">
+                Chưa có bài học trong khóa này.
+            </div>
+        </section>
+    </div>
+</main>
+</body>
+</html>

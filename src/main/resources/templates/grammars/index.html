@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head(${pageTitle})"></head>
+<body>
+<style>
+    .grammar-controls{display:flex;gap:12px;margin-bottom:16px;align-items:center;flex-wrap:wrap}
+    .sel-wrap{position:relative}
+    .sel-wrap select{appearance:none;padding:9px 34px 9px 13px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-weight:500;background:white;cursor:pointer;min-width:220px;outline:none}
+    .sel-wrap::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#888;pointer-events:none}
+    .g-search-row{display:flex;gap:8px;flex:1}
+    .g-inp{flex:1;padding:9px 13px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;outline:none;min-width:180px}
+    .g-inp:focus{border-color:var(--primary-color)}
+    .btn-gsearch{padding:9px 22px;background:var(--primary-color);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+    .btn-gsearch:hover{background:#1fa99d}
+    .lvtabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+    .lvtab{padding:7px 18px;border:1.5px solid #ddd;background:white;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;color:#555;transition:.15s}
+    .lvtab.active{background:var(--primary-color);border-color:var(--primary-color);color:white}
+    .lvtab:not(.active):hover{border-color:var(--primary-color);color:var(--primary-color)}
+    .gr-item{background:white;border-radius:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden;border-left:4px solid var(--primary-color);transition:box-shadow .2s}
+    .gr-item:hover{box-shadow:0 4px 20px rgba(0,0,0,.1)}
+    .gr-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;user-select:none;gap:12px}
+    .gr-head-l{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+    .gr-num{min-width:32px;height:32px;border-radius:50%;background:#f0fdfa;color:var(--primary-color);font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(38,187,164,.3);flex-shrink:0}
+    .gr-title{font-size:17px;font-weight:800;color:#111;font-family:'Noto Sans JP',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gr-sub{font-size:12px;color:#888;margin-top:2px}
+    .gr-head-r{display:flex;align-items:center;gap:10px;flex-shrink:0}
+    .jlpt-pill{background:#6c63ff;color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:50px}
+    .exp-btn{background:#f4f7f6;border:none;color:#888;width:30px;height:30px;border-radius:50%;font-size:12px;cursor:pointer;transition:transform .2s,background .15s;display:flex;align-items:center;justify-content:center}
+    .exp-btn.open{transform:rotate(180deg);background:var(--primary-color);color:white}
+    .gr-body{padding:0 20px 20px}
+    .gr-sec{margin-top:14px}
+    .sec-lbl{font-size:10px;font-weight:700;color:#999;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+    .sec-lbl-ic{color:var(--primary-color)}
+    .struct-box{background:#f0f0ff;border-radius:8px;padding:11px 16px;font-size:15px;font-weight:700;color:#3b3b9e;font-family:'Noto Sans JP',sans-serif}
+    .mean-txt{font-size:14px;color:#444;line-height:1.7}
+    .ex-row{background:#fff8f8;border-radius:8px;padding:10px 14px;margin-bottom:8px;border-left:3px solid #ff6b81}
+    .ex-jp{font-size:14px;font-family:'Noto Sans JP',sans-serif;color:#333;line-height:1.7;display:block}
+    .empty-g{text-align:center;padding:60px 20px;color:#888}
+    .pg-g{display:flex;justify-content:center;gap:6px;padding:20px 0;flex-wrap:wrap}
+    .pg-g-btn{min-width:36px;height:36px;padding:0 10px;border:1.5px solid #ddd;background:white;border-radius:8px;font-size:13px;font-weight:700;color:#555;cursor:pointer;transition:.15s}
+    .pg-g-btn.active{background:var(--primary-color);border-color:var(--primary-color);color:white}
+    .pg-g-btn:hover:not(:disabled):not(.active){border-color:var(--primary-color);color:var(--primary-color)}
+    .pg-g-btn:disabled{opacity:.35;cursor:not-allowed}
+</style>
+
+    <div th:replace="fragments/sidebar :: sidebar('grammars')"></div>
+    <main class="main-content">
+        <div th:replace="fragments/topbar :: topbar('/dashboard', 'Dashboard', '#', 'Cài đặt')"></div>
+        <div class="container">
+
+            <div class="grammar-controls">
+                <div class="sel-wrap">
+                    <select id="courseSelect">
+                        <option>Tiếng Nhật N5 (Miễn phí)</option>
+                    </select>
+                </div>
+                <div class="g-search-row">
+                    <input class="g-inp" id="searchInput" type="text" placeholder="Tìm mẫu ngữ pháp...">
+                    <button class="btn-gsearch" onclick="doSearch()">Tìm kiếm</button>
+                </div>
+            </div>
+
+            <div class="lvtabs">
+                <button class="lvtab active" onclick="setLevel('all',this)">Tất cả</button>
+                <button class="lvtab" onclick="setLevel('N5',this)">N5</button>
+                <button class="lvtab" onclick="setLevel('N4',this)">N4</button>
+                <button class="lvtab" onclick="setLevel('N3',this)">N3</button>
+                
+                <th:block th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                    <button class="btn btn-primary btn-sm rounded-pill ms-auto" style="font-size:12px; font-weight:700;" onclick="openAdminModal()">
+                        + Thêm Ngữ Pháp
+                    </button>
+                </th:block>
+            </div>
+
+            <div id="grammarList">
+                <div th:each="grammar, iter : ${grammars}"
+                     class="gr-item"
+                     th:data-level="${grammar.level}"
+                     th:data-rule="${grammar.rule}">
+
+                    <div class="gr-head" th:onclick="'toggleG(' + ${iter.index} + ')'">
+                        <div class="gr-head-l">
+                            <div class="gr-num" th:text="${iter.count}">1</div>
+                            <div>
+                                <div class="gr-title" th:text="${grammar.rule}">〜は〜です</div>
+                                <div class="gr-sub" th:if="${grammar.lesson != null}" th:text="${grammar.lesson.title}"></div>
+                            </div>
+                        </div>
+                        <div class="gr-head-r">
+                            <span class="jlpt-pill" th:text="${grammar.level ?: 'N5'}">N5</span>
+                            <th:block th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                                <button class="btn btn-sm btn-light p-1 shadow-sm" title="Sửa"
+                                        th:data-id="${grammar.grammarId}"
+                                        th:data-rule="${grammar.rule}"
+                                        th:data-example="${grammar.example}"
+                                        th:data-notes="${grammar.notes}"
+                                        th:data-level="${grammar.level}"
+                                        th:data-lessonid="${grammar.lesson != null ? grammar.lesson.lessonId : null}"
+                                        onclick="event.stopPropagation(); openAdminModal(this)">✏️</button>
+                                <button class="btn btn-sm btn-light p-1 shadow-sm text-danger" title="Xóa"
+                                        th:onclick="'event.stopPropagation(); deleteGrammar(' + ${grammar.grammarId} + ')'">🗑️</button>
+                            </th:block>
+                            <button class="exp-btn" th:id="'eBtn' + ${iter.index}">▼</button>
+                        </div>
+                    </div>
+
+                    <div class="gr-body" th:id="'gBody' + ${iter.index}" style="display:none">
+                        <div class="gr-sec" th:if="${grammar.rule != null}">
+                            <div class="sec-lbl"><span class="sec-lbl-ic">⊞</span> CẤU TRÚC</div>
+                            <div class="struct-box" th:text="${grammar.rule}"></div>
+                        </div>
+                        <div class="gr-sec" th:if="${grammar.example != null}">
+                            <div class="sec-lbl"><span class="sec-lbl-ic">↳</span> Ý NGHĨA</div>
+                            <div class="mean-txt" th:text="${grammar.example}"></div>
+                        </div>
+                        <div class="gr-sec" th:if="${grammar.notes != null}">
+                            <div class="sec-lbl"><span class="sec-lbl-ic">✓</span> VÍ DỤ</div>
+                            <div th:each="line : ${#strings.arraySplit(grammar.notes, '|')}">
+                                <div class="ex-row"><span class="ex-jp" th:text="${line}"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${grammars == null or grammars.isEmpty()}" class="empty-g">
+                    <div style="font-size:52px;margin-bottom:12px">📝</div>
+                    <p>Chưa có ngữ pháp trong cơ sở dữ liệu.</p>
+                </div>
+            </div>
+
+            <div class="pg-g" id="paginationG"></div>
+        </div>
+    </main>
+
+<!-- Admin Grammar Modal (Premium UI) -->
+<div class="modal-overlay" id="adminGrammarModal" style="z-index: 2005;">
+    <div class="pa-modal-box">
+        <div class="pa-modal-header">
+            <h5 class="pa-modal-title" id="agModalTitle">📄 Thêm Ngữ Pháp Mới</h5>
+            <button class="pa-btn-close" onclick="closeAdminModal()">✕</button>
+        </div>
+        <form id="adminGrammarForm" onsubmit="saveGrammar(event)">
+            <input type="hidden" id="agId">
+            <div class="pa-modal-body">
+                <div class="pa-form-group">
+                    <label class="pa-form-label">Cấu Trúc Ngữ Pháp <span style="color:#e53935">*</span></label>
+                    <input type="text" id="agRule" class="pa-form-control pa-form-control-jp" required placeholder="Ví dụ: 〜は〜です">
+                </div>
+
+                <div class="pa-form-group">
+                    <label class="pa-form-label">💡 Ý Nghĩa <span style="color:#e53935">*</span></label>
+                    <input type="text" id="agExample" class="pa-form-control" required placeholder="~ thì là ~">
+                </div>
+
+                <div class="pa-form-group">
+                    <label class="pa-form-label">📖 Ví Dụ (Ngăn cách bằng dấu "|")</label>
+                    <textarea id="agNotes" class="pa-form-control jp-text" rows="3" placeholder="わたしはがくせいだ。| Tôi là sinh viên."></textarea>
+                </div>
+
+                <div class="pa-row">
+                    <div class="pa-col pa-form-group">
+                        <label class="pa-form-label">⭐ Trình Độ</label>
+                        <select id="agLevel" class="pa-form-control">
+                            <option value="N5">N5</option>
+                            <option value="N4">N4</option>
+                            <option value="N3">N3</option>
+                            <option value="N2">N2</option>
+                            <option value="N1">N1</option>
+                        </select>
+                    </div>
+                    <div class="pa-col pa-form-group">
+                        <label class="pa-form-label">🎓 ID Bài Học</label>
+                        <input type="number" id="agLessonId" class="pa-form-control" placeholder="Tùy chọn (VD: 1)">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pa-modal-footer">
+                <button type="button" class="pa-btn pa-btn-light" onclick="closeAdminModal()">Hủy</button>
+                <button type="submit" class="pa-btn pa-btn-primary" id="agSubmitBtn">Lưu Ngữ Pháp</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const PAGE_G=8; let pageG=1,levelG='all',searchG='';
+    function gRows(){return[...document.querySelectorAll('#grammarList .gr-item')]}
+    function gVis(){return gRows().filter(el=>{const lv=(el.dataset.level||'').toUpperCase(),ru=(el.dataset.rule||'').toLowerCase();return(levelG==='all'||lv===levelG)&&(!searchG||ru.includes(searchG))})}
+    function renderG(p){const vs=gVis(),tp=Math.max(1,Math.ceil(vs.length/PAGE_G));pageG=Math.min(Math.max(1,p),tp);const s=(pageG-1)*PAGE_G;gRows().forEach(r=>r.style.display='none');vs.slice(s,s+PAGE_G).forEach(r=>r.style.display='');renderPG(tp)}
+    function renderPG(tp){const pg=document.getElementById('paginationG');if(!pg||tp<=1){if(pg)pg.innerHTML='';return}let h=`<button class="pg-g-btn" onclick="renderG(${pageG-1})" ${pageG===1?'disabled':''}>←</button>`;for(let i=1;i<=tp;i++)h+=`<button class="pg-g-btn ${i===pageG?'active':''}" onclick="renderG(${i})">${i}</button>`;h+=`<button class="pg-g-btn" onclick="renderG(${pageG+1})" ${pageG===tp?'disabled':''}>→</button>`;pg.innerHTML=h}
+    function setLevel(l,btn){levelG=l;document.querySelectorAll('.lvtab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderG(1)}
+    function doSearch(){searchG=(document.getElementById('searchInput').value||'').toLowerCase().trim();renderG(1)}
+    function toggleG(idx){const b=document.getElementById('gBody'+idx),btn=document.getElementById('eBtn'+idx);if(!b)return;const open=b.style.display!=='none';b.style.display=open?'none':'block';btn.classList.toggle('open',!open)}
+    document.addEventListener('DOMContentLoaded',function(){renderG(1);const fb=document.getElementById('gBody0'),fbtn=document.getElementById('eBtn0');if(fb)fb.style.display='block';if(fbtn)fbtn.classList.add('open');document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()})});
+
+/* ── ADMIN CRUD FUNCTIONS ── */
+function openAdminModal(btnEl) {
+    const modal = document.getElementById('adminGrammarModal');
+    const form = document.getElementById('adminGrammarForm');
+    
+    if (btnEl) {
+        // Edit mode
+        const id = btnEl.getAttribute('data-id');
+        document.getElementById('agModalTitle').textContent = 'Sửa Ngữ Pháp #' + id;
+        document.getElementById('agId').value = id;
+        document.getElementById('agLessonId').value = btnEl.getAttribute('data-lessonid') || '';
+        document.getElementById('agRule').value = btnEl.getAttribute('data-rule') || '';
+        document.getElementById('agExample').value = btnEl.getAttribute('data-example') || '';
+        document.getElementById('agNotes').value = btnEl.getAttribute('data-notes') || '';
+        const level = btnEl.getAttribute('data-level');
+        if (level) document.getElementById('agLevel').value = level.toUpperCase();
+    } else {
+        // Create mode
+        document.getElementById('agModalTitle').textContent = 'Thêm Ngữ Pháp Mới';
+        form.reset();
+        document.getElementById('agId').value = '';
+    }
+    
+    modal.style.display = 'flex';
+}
+
+function closeAdminModal() {
+    document.getElementById('adminGrammarModal').style.display = 'none';
+}
+
+async function saveGrammar(e) {
+    e.preventDefault();
+    const btn = document.getElementById('agSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Đang lưu...';
+
+    const id = document.getElementById('agId').value;
+    const isEdit = !!id;
+    const method = isEdit ? 'PUT' : 'POST';
+    const url = isEdit ? `/api/grammars/${id}` : `/api/grammars`;
+
+    const payload = {
+        rule: document.getElementById('agRule').value.trim(),
+        example: document.getElementById('agExample').value.trim(),
+        notes: document.getElementById('agNotes').value.trim(),
+        level: document.getElementById('agLevel').value
+    };
+    
+    const lessonId = parseInt(document.getElementById('agLessonId').value);
+    if (!isNaN(lessonId)) {
+        payload.lesson = { lessonId: lessonId };
+    }
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        
+        if (res.ok) {
+            window.location.reload();
+        } else {
+            const data = await res.json();
+            alert('Lỗi lưu: ' + (data.message || 'Hệ thống'));
+        }
+    } catch(err) {
+        alert('Lỗi mạng!');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Lưu Ngữ Pháp';
+    }
+}
+
+async function deleteGrammar(id) {
+    if(!confirm('🚨 BẠN CHẮC CHẮN MUỐN XÓA NGỮ PHÁP NÀY?')) return;
+    try {
+        const res = await fetch(`/api/grammars/${id}`, { method: 'DELETE' });
+        if(res.ok) window.location.reload();
+        else {
+            const data = await res.json();
+            alert('Không thể xóa: ' + (data.message || ''));
+        }
+    } catch(err) {
+        alert('Lỗi mạng kết nối máy chủ');
+    }
+}
+</script>
+</body>
+</html>

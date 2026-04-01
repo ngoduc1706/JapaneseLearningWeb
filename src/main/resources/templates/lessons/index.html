@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head()}"></head>
+<body>
+    <nav th:replace="~{fragments/common :: navbar('courses')}"></nav>
+    <main class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="mb-0">Lessons - Index</h1>
+            <div class="d-flex gap-2">
+                <a class="btn btn-success" th:href="@{'/sync/lessons/create'}">Create</a>
+                <a class="btn btn-outline-secondary" th:href="@{/manage}">Back</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted">Data source: /api/lessons</p>
+                <div id="listResult" class="table-responsive"><p class="text-muted">Loading...</p></div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="~{fragments/common :: footer}"></footer>
+    <th:block th:replace="~{fragments/common :: scripts}"></th:block>
+    <script>
+        const apiBase = '/api/lessons';
+        const module = 'lessons';
+        fetch(apiBase)
+            .then(response => response.json())
+            .then(payload => {
+                const data = payload.data || [];
+                const container = document.getElementById('listResult');
+                if (!Array.isArray(data) || data.length === 0) {
+                    container.innerHTML = '<div class="alert alert-info">No records found.</div>';
+                    return;
+                }
+                const first = data[0];
+                const columns = Object.keys(first).slice(0, 6);
+                let html = '<table class="table table-striped"><thead><tr>';
+                columns.forEach(c => html += <th></th>);
+                html += '<th>Actions</th></tr></thead><tbody>';
+                data.forEach(item => {
+                    const id = item.id || item.courseId || item.lessonId || item.quizId || '';
+                    html += '<tr>';
+                    columns.forEach(c => {
+                        const value = item[c] == null ? '' : item[c];
+                        html += <td></td>;
+                    });
+                    html += <td>
+                        <a class="btn btn-sm btn-primary" href="/sync//edit?id=">Edit</a>
+                        <a class="btn btn-sm btn-danger" href="/sync//delete?id=">Delete</a>
+                    </td>;
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            })
+            .catch(error => {
+                document.getElementById('listResult').innerHTML = <div class="alert alert-danger">Failed to load data: </div>;
+            });
+    </script>
+</body>
+</html>
