@@ -597,8 +597,8 @@ public class ViewController {
     /**
      * Register page
      */
-    @GetMapping("/register")
-    public String register(Model model) {
+    @GetMapping("/dangky")
+    public String dangky(Model model) {
         model.addAttribute("pageTitle", "Register");
         return "account/register";
     }

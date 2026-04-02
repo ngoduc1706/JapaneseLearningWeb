@@ -39,7 +39,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 // Public endpoints
                 .requestMatchers("/", "/index", "/about").permitAll()
-                .requestMatchers("/login", "/register", "/forgot-password").permitAll()
+                .requestMatchers("/login", "/dangky", "/forgot-password").permitAll()
                 .requestMatchers("/home/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/courses/**", "/api/lessons/**").permitAll()

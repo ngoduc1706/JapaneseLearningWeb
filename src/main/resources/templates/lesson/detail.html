@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head(${pageTitle})"></head>
+<body>
+<style>
+    /* ── LESSON DETAIL ── */
+    .ld-breadcrumb{font-size:12px;color:#888;margin-bottom:14px}
+    .ld-breadcrumb a{color:var(--primary-color);text-decoration:none}
+    .ld-breadcrumb a:hover{text-decoration:underline}
+
+    .ld-banner{background:linear-gradient(135deg,#26bba4 0%,#1e9d8a 100%);border-radius:14px;padding:18px 24px;color:white;display:flex;align-items:center;gap:14px;margin-bottom:24px}
+    .ld-banner-icon{font-size:26px}
+    .ld-banner-title{font-size:18px;font-weight:900}
+    .ld-banner-sub{font-size:12px;opacity:.8}
+
+    .ld-section{background:white;border-radius:14px;padding:20px 24px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:18px}
+    .ld-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1.5px solid #f0f0f0}
+    .ld-section-title{font-size:14px;font-weight:800;color:#111;display:flex;align-items:center;gap:8px}
+    .ld-section-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:50px;background:#e0f7f4;color:var(--primary-color)}
+
+    /* Info grid */
+    .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media(max-width:768px){.info-grid{grid-template-columns:1fr 1fr}}
+    .info-item{display:flex;flex-direction:column;gap:3px}
+    .info-lbl{font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.07em}
+    .info-val{font-size:13px;font-weight:600;color:#333}
+
+    /* Kanji table */
+    .k-table{width:100%;border-collapse:collapse}
+    .k-table th{background:#f8f9fa;font-size:10px;font-weight:700;color:#888;text-transform:uppercase;padding:8px 10px;text-align:left;letter-spacing:.07em;border-bottom:1.5px solid #eee}
+    .k-table td{padding:10px;border-bottom:1px solid #f4f4f4;font-size:13px;vertical-align:middle}
+    .k-table tr:hover td{background:#fafff9}
+    .k-char{font-family:'Noto Sans JP',sans-serif;font-size:28px;font-weight:900;color:#333;text-align:center}
+    .k-yomi{font-family:'Noto Sans JP',sans-serif;font-size:13px;color:var(--primary-color);cursor:pointer}
+    .k-yomi:hover{text-decoration:underline}
+    .k-mean{font-size:12px;color:#555}
+
+    /* Vocab table */
+    .v-table{width:100%;border-collapse:collapse}
+    .v-table th{background:#f8f9fa;font-size:10px;font-weight:700;color:#888;text-transform:uppercase;padding:8px 10px;text-align:left;border-bottom:1.5px solid #eee}
+    .v-table td{padding:10px;border-bottom:1px solid #f4f4f4;font-size:13px;vertical-align:middle}
+    .v-table tr:hover td{background:#fafff9}
+    .v-kanji{font-family:'Noto Sans JP',sans-serif;font-size:16px;font-weight:700;color:#333}
+    .v-hira{font-family:'Noto Sans JP',sans-serif;font-size:13px;color:var(--primary-color)}
+    .v-mean{font-size:12px;color:#444}
+    .jlpt-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:#f0f0ff;color:#6c63ff}
+    .v-btn-detail{padding:4px 10px;border:1.5px solid var(--primary-color);color:var(--primary-color);background:white;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
+    .v-btn-detail:hover{background:var(--primary-color);color:white}
+    .v-btn-new{padding:4px 10px;border:1.5px solid #ff6b81;color:#ff6b81;background:white;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
+    .v-btn-new:hover{background:#ff6b81;color:white}
+
+    /* Grammar table */
+    .g-table{width:100%;border-collapse:collapse}
+    .g-table th{background:#f8f9fa;font-size:10px;font-weight:700;color:#888;text-transform:uppercase;padding:8px 10px;text-align:left;border-bottom:1.5px solid #eee}
+    .g-table td{padding:12px 10px;border-bottom:1px solid #f4f4f4;font-size:12px;vertical-align:middle}
+    .g-table tr:hover td{background:#fafff9}
+    .g-rule{font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;color:#333}
+    .g-ex{font-size:11px;color:#555}
+    .g-lvl{font-size:10px;font-weight:700;padding:2px 7px;border-radius:50px;background:#6c63ff;color:white}
+    .g-note{font-size:11px;color:#8888;line-height:1.5}
+
+    /* Action buttons */
+    .btn-action{padding:8px 18px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+    .btn-quiz{background:#6c63ff;color:white}
+    .btn-quiz:hover{background:#5247d4}
+    .btn-back{background:#f4f7f6;color:#555;border:1.5px solid #ddd}
+    .btn-back:hover{background:#e8eeed}
+
+    .empty-state{text-align:center;padding:30px;color:#bbb;font-size:13px}
+</style>
+
+    <div th:replace="fragments/sidebar :: sidebar('lessons')"></div>
+    <main class="main-content">
+        <div th:replace="fragments/topbar :: topbar('/lessons', 'Bài học', '#', 'Cài đặt')"></div>
+        <div class="container">
+
+            <!-- Breadcrumb -->
+            <div class="ld-breadcrumb">
+                <a href="/lessons">Bài học</a> › <a href="/lessons">Danh sách</a> ›
+                <span th:text="${lesson != null ? lesson.title : 'Chi tiết'}">Chi tiết bài học</span>
+            </div>
+
+            <!-- Banner -->
+            <div class="ld-banner">
+                <div class="ld-banner-icon">📘</div>
+                <div>
+                    <div class="ld-banner-title">Chi tiết bài học</div>
+                    <div class="ld-banner-sub" th:text="${lesson != null ? lesson.title : ''}">Lesson Title</div>
+                </div>
+            </div>
+
+            <!-- Thông tin chính -->
+            <div class="ld-section">
+                <div class="ld-section-head">
+                    <div class="ld-section-title">📋 Thông tin chính</div>
+                </div>
+                <div class="info-grid" th:if="${lesson != null}">
+                    <div class="info-item">
+                        <div class="info-lbl">Lesson ID</div>
+                        <div class="info-val" th:text="${lesson.lessonId}">1</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-lbl">Tên bài</div>
+                        <div class="info-val" th:text="${lesson.title}">—</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-lbl">Mô tả</div>
+                        <div class="info-val" th:text="${lesson.content != null ? #strings.abbreviate(lesson.content, 80) : '—'}">—</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-lbl">Khóa học</div>
+                        <div class="info-val" th:text="${lesson.course != null ? lesson.course.title : '—'}">—</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-lbl">Thứ tự</div>
+                        <div class="info-val" th:text="${lesson.orderInCourse ?: '—'}">—</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-lbl">Ngày tạo</div>
+                        <div class="info-val">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kanji section -->
+            <div class="ld-section" th:if="${lesson != null and lesson.kanjis != null and lesson.kanjis.size() > 0}">
+                <div class="ld-section-head">
+                    <div class="ld-section-title">✕ Kanji</div>
+                    <span class="ld-section-badge" th:text="${lesson.kanjis.size()} + ' từ'">0 từ</span>
+                </div>
+                <table class="k-table">
+                    <thead>
+                        <tr>
+                            <th style="width:70px">KANJI</th>
+                            <th>ÂM ON</th>
+                            <th>ÂM KUN</th>
+                            <th>NGHĨA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="k : ${lesson.kanjis}">
+                            <td><div class="k-char" th:text="${k.character}">字</div></td>
+                            <td><span class="k-yomi" th:text="${k.onYomi ?: '—'}">—</span></td>
+                            <td><span class="k-yomi" th:text="${k.kunYomi ?: '—'}">—</span></td>
+                            <td><span class="k-mean" th:text="${k.meaning ?: '—'}">—</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Từ vựng section -->
+            <div class="ld-section" th:if="${lesson != null and lesson.vocabularies != null and lesson.vocabularies.size() > 0}">
+                <div class="ld-section-head">
+                    <div class="ld-section-title">📖 Từ vựng</div>
+                    <span class="ld-section-badge" th:text="${lesson.vocabularies.size()} + ' từ'">0 từ</span>
+                </div>
+                <table class="v-table">
+                    <thead>
+                        <tr>
+                            <th>KANJI</th>
+                            <th>HIRAGANA</th>
+                            <th>ROMAJI</th>
+                            <th>NGHĨA</th>
+                            <th>JLPT</th>
+                            <th>HÀNH ĐỘNG</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="v : ${lesson.vocabularies}">
+                            <td><span class="v-kanji" th:text="${v.kanji ?: v.hiragana}">あ</span></td>
+                            <td><span class="v-hira" th:text="${v.hiragana ?: '—'}">—</span></td>
+                            <td><span th:text="${v.romaji ?: '—'}">—</span></td>
+                            <td><span class="v-mean" th:text="${v.meaning}">—</span></td>
+                            <td><span class="jlpt-badge" th:text="${v.jlptLevel ?: 'N5'}">N5</span></td>
+                            <td>
+                                <button class="v-btn-detail">Chi tiết</button>
+                                <button class="v-btn-new" style="margin-left:4px">Học mới</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Ngữ pháp section -->
+            <div class="ld-section">
+                <div class="ld-section-head">
+                    <div class="ld-section-title">🖊 Ngữ pháp</div>
+                    <span class="ld-section-badge" th:text="${lesson != null and lesson.grammars != null ? lesson.grammars.size() : 0} + ' mẫu'">0 mẫu</span>
+                </div>
+                
+                <div th:if="${lesson != null and lesson.grammars != null and lesson.grammars.size() > 0}">
+                    <table class="g-table">
+                        <thead>
+                            <tr>
+                                <th>QUY TẮC</th>
+                                <th>VÍ DỤ</th>
+                                <th>CẤP ĐỘ</th>
+                                <th>GHI CHÚ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="g : ${lesson.grammars}">
+                                <td><span class="g-rule" th:text="${g.rule}">—</span></td>
+                                <td><span class="g-ex" th:text="${g.example ?: '—'}">—</span></td>
+                                <td><span class="g-lvl" th:text="${g.level ?: 'N5'}">N5</span></td>
+                                <td><span class="g-note" th:text="${g.notes != null ? #strings.abbreviate(g.notes, 80) : '—'}">—</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:unless="${lesson != null and lesson.grammars != null and lesson.grammars.size() > 0}" class="empty-state">
+                    <p>Chưa có dữ liệu ngữ pháp cho bài học này.</p>
+                </div>
+            </div>
+
+            <!-- Empty state if no lesson -->
+            <div class="ld-section" th:if="${lesson == null}">
+                <div class="empty-state">
+                    <div style="font-size:48px;margin-bottom:10px">📭</div>
+                    <p>Không tìm thấy bài học này.</p>
+                    <a href="/lessons" style="color:var(--primary-color)">← Quay lại danh sách</a>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:10px;margin-bottom:30px" th:if="${lesson != null}">
+                <button class="btn-action btn-back" onclick="history.back()">← Quay lại</button>
+                <button class="btn-action btn-quiz"
+                        th:onclick="'window.location.href=\'/quiz/lesson/' + ${lesson.lessonId} + '\''">
+                    📝 Làm bài kiểm tra
+                </button>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

@@ -27,7 +27,7 @@ public class AuthController {
     /**
      * Handle user registration
      */
-    @PostMapping("/register")
+    @PostMapping("/dangky")
     public String register(
             @RequestParam String fullName,
             @RequestParam String email,
@@ -39,28 +39,28 @@ public class AuthController {
             // Validate inputs
             if (fullName == null || fullName.trim().isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "Họ tên không được để trống");
-                return "redirect:/register";
+                return "redirect:/dangky";
             }
             
             if (email == null || email.trim().isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "Email không được để trống");
-                return "redirect:/register";
+                return "redirect:/dangky";
             }
 
             if (password == null || password.length() < 6) {
                 redirectAttributes.addFlashAttribute("error", "Mật khẩu phải có ít nhất 6 ký tự");
-                return "redirect:/register";
+                return "redirect:/dangky";
             }
 
             if (!password.equals(confirmPassword)) {
                 redirectAttributes.addFlashAttribute("error", "Mật khẩu xác nhận không khớp");
-                return "redirect:/register";
+                return "redirect:/dangky";
             }
 
             // Check if email already exists
             if (userRepository.findByEmail(email) != null) {
                 redirectAttributes.addFlashAttribute("error", "Email này đã được đăng ký");
-                return "redirect:/register";
+                return "redirect:/dangky";
             }
 
             // Create new user
@@ -87,7 +87,7 @@ public class AuthController {
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi khi tạo tài khoản: " + e.getMessage());
-            return "redirect:/register";
+            return "redirect:/dangky";
         }
     }
 }

@@ -254,27 +254,40 @@
         </style>
 
         <script>
-            // Ensure the container is decoupled as quickly as possible
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', moveChatContainer);
-            } else {
-                moveChatContainer();
+            // Improved initialization with error handling to prevent rendering blocks
+            function initChat() {
+                // Using setTimeout(0) to move the container to the end of the render queue
+                setTimeout(() => {
+                    try {
+                        const chatContainer = document.getElementById('global-chatbox-container');
+                        if (chatContainer && chatContainer.parentNode !== document.body) {
+                            document.body.appendChild(chatContainer);
+                            console.log('Chatbox moved to body root.');
+                        }
+                        
+                        // Bind Enter key
+                        const input = document.getElementById('ai-chat-input');
+                        if(input && !input.dataset.bound) {
+                            input.dataset.bound = "true";
+                            input.addEventListener('keypress', (e) => {
+                                if (e.key === 'Enter') {
+                                    if (typeof window.sendAiChat === 'function') {
+                                        window.sendAiChat();
+                                    }
+                                }
+                            });
+                        }
+                    } catch (err) {
+                        console.error('Chatbox init error:', err);
+                    }
+                }, 100); // 100ms delay to let the page settle
             }
 
-            function moveChatContainer() {
-                const chatContainer = document.getElementById('global-chatbox-container');
-                if (chatContainer && chatContainer.parentNode !== document.body) {
-                    document.body.appendChild(chatContainer);
-                }
-                
-                // Bind Enter key
-                const input = document.getElementById('ai-chat-input');
-                if(input && !input.dataset.bound) {
-                    input.dataset.bound = "true";
-                    input.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') window.sendAiChat();
-                    });
-                }
+            // Ensure initialization happens safely after primary content is ready
+            if (document.readyState === 'complete') {
+                initChat();
+            } else {
+                window.addEventListener('load', initChat);
             }
 
             // Expose globally to survive ANY scoping or async edge cases
