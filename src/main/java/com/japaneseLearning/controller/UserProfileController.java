@@ -44,9 +44,7 @@ public class UserProfileController {
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<UserProfileDTO>> getProfile() {
         try {
-            String userId = getCurrentUserId();
-            ApplicationUser user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+            ApplicationUser user = getCurrentUser();
             
             UserProfileDTO dto = new UserProfileDTO(
                     user.getId(),
@@ -75,9 +73,7 @@ public class UserProfileController {
     public ResponseEntity<ApiResponse<UserProfileDTO>> updateProfile(
             @RequestBody UpdateProfileDTO updateDTO) {
         try {
-            String userId = getCurrentUserId();
-            ApplicationUser user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+            ApplicationUser user = getCurrentUser();
             
             if (updateDTO.firstName() != null && !updateDTO.firstName().isBlank()) {
                 user.setFirstName(updateDTO.firstName());
@@ -151,9 +147,7 @@ public class UserProfileController {
             Files.write(filePath, file.getBytes());
             
             // Update user avatar URL
-            String userId = getCurrentUserId();
-            ApplicationUser user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                ApplicationUser user = getCurrentUser();
             
             String avatarUrl = "/uploads/avatars/" + uniqueFileName;
             user.setAvatarUrl(avatarUrl);
@@ -190,9 +184,12 @@ public class UserProfileController {
                         .body(ApiResponse.error("Passwords do not match"));
             }
             
-            String userId = getCurrentUserId();
-            ApplicationUser user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                ApplicationUser user = getCurrentUser();
+
+                if (user.getPasswordHash() == null || user.getPasswordHash().isBlank()) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Tai khoan nay khong ho tro doi mat khau bang form"));
+                }
             
             // Verify current password
             if (!passwordEncoder.matches(changePasswordDTO.currentPassword(), user.getPasswordHash())) {
@@ -214,8 +211,20 @@ public class UserProfileController {
     /**
      * Helper method to get current user ID from authentication
      */
-    private String getCurrentUserId() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+    private ApplicationUser getCurrentUser() {
+        String principal = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        ApplicationUser user = userRepository.findById(principal).orElse(null);
+        if (user == null) {
+            user = userRepository.findByEmail(principal);
+        }
+        if (user == null) {
+            user = userRepository.findByUsername(principal);
+        }
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        return user;
     }
 
     /**

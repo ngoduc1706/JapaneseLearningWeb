@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Japanese Learning – Experience the Future</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Be+Vietnam+Pro:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #26BEBE;
+      --secondary: #F5A623;
+      --dark: #1a1a1a;
+      --glass: rgba(255, 255, 255, 0.8);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Be Vietnam Pro', sans-serif; background: #f0fafa; overflow-x: hidden; }
+
+    /* ── SCROLL PROGRESS ── */
+    #progress-container { position: fixed; top: 0; width: 100%; height: 4px; z-index: 2000; }
+    #progress-bar { height: 100%; background: var(--secondary); width: 0%; transition: 0.1s; }
+
+    /* ── MOUSE GLOW EFFECT ── */
+    #cursor-glow {
+      position: fixed; width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(77, 217, 217, 0.15) 0%, rgba(255,255,255,0) 70%);
+      border-radius: 50%; pointer-events: none; z-index: 1; transform: translate(-50%, -50%);
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; width: 100%; height: 80px; z-index: 1000;
+      display: flex; justify-content: center; align-items: center; padding: 0 5%;
+      transition: 0.4s;
+    }
+    nav.scrolled { background: var(--glass); backdrop-filter: blur(15px); height: 65px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+
+    .nav-content { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-weight: 900; font-size: 1.5rem; color: var(--primary); text-decoration: none; letter-spacing: -1px; }
+
+    .nav-links a {
+      text-decoration: none; color: var(--dark); font-weight: 700; font-size: 0.8rem;
+      margin-left: 25px; text-transform: uppercase; transition: 0.3s; opacity: 0.7;
+    }
+    .nav-links a:hover { opacity: 1; color: var(--primary); }
+
+    /* ── HERO SECTION ── */
+    .hero {
+      height: 100vh; width: 100%; position: relative; overflow: hidden;
+      background: linear-gradient(135deg, #e0fdfd 0%, #4dd9d9 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+
+    /* Floating Clouds Animation */
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    .cloud {
+      position: absolute; background: white; border-radius: 50%; filter: blur(40px); opacity: 0.4;
+      animation: float 6s ease-in-out infinite; z-index: 2;
+    }
+
+    .slogan-box { text-align: center; z-index: 10; pointer-events: none; }
+    .s-vi { font-family: 'Dancing Script', cursive; font-size: 5rem; color: #fff; text-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    
+    /* Text Gradient Animation */
+    @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+    .s-mot {
+      font-weight: 900; font-size: clamp(2.5rem, 6vw, 5rem); display: block;
+      background: linear-gradient(90deg, #fff 20%, var(--secondary) 50%, #fff 80%);
+      background-size: 200% auto; background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      animation: shimmer 4s linear infinite;
+    }
+
+    .btn-main {
+      margin-top: 40px; padding: 18px 45px; border-radius: 50px; background: var(--dark);
+      color: #fff; text-decoration: none; font-weight: 800; text-transform: uppercase;
+      display: inline-block; transition: 0.4s; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      pointer-events: auto; position: relative; z-index: 20;
+    }
+    .btn-main:hover { transform: translateY(-5px) scale(1.05); background: var(--secondary); }
+
+    /* ── CITY SVG ── */
+    .city-svg {
+      position: absolute; bottom: -20px; width: 110%; height: 50%; z-index: 5;
+    }
+    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .wheel { transform-origin: center; animation: rotate 20s linear infinite; }
+
+    /* ── BOTTOM TABS ── */
+    .bottom-nav {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(20px);
+      padding: 10px; border-radius: 100px; display: flex; gap: 10px;
+      border: 1px solid rgba(255,255,255,0.3); z-index: 1000;
+    }
+    .tab-item {
+      padding: 12px 25px; border-radius: 50px; text-decoration: none;
+      color: var(--dark); font-weight: 700; font-size: 0.75rem; transition: 0.3s;
+    }
+    .tab-item.active { background: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    .tab-item:hover:not(.active) { background: rgba(255,255,255,0.4); }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .s-vi { font-size: 3rem; }
+    }
+
+    /* ── COURSES SECTION ── */
+    .courses-section {
+      padding: 60px 5%;
+      background: #ffffff;
+      text-align: center;
+    }
+    .courses-section-title {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--dark);
+      margin-bottom: 20px;
+    }
+    .courses-section-subtitle {
+      font-size: 1rem;
+      color: #999;
+      margin-bottom: 50px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .course-item {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+    .course-item:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 40px rgba(38, 187, 164, 0.15);
+    }
+    .course-header {
+      height: 120px;
+      background: linear-gradient(135deg, var(--primary) 0%, #1fa99d 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 900;
+    }
+    .course-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .course-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 10px;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+    }
+    .course-desc {
+      font-size: 0.9rem;
+      color: #999;
+      margin-bottom: 15px;
+      flex: 1;
+    }
+    .course-badge {
+      display: inline-block;
+      background: #e0f7f4;
+      color: var(--primary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      width: fit-content;
+    }
+    .course-badge.pro {
+      background: #ede9fe;
+      color: #7c3aed;
+    }
+    .course-btn {
+      padding: 12px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.3s;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+    }
+    .course-btn:hover {
+      background: #1fa99d;
+      transform: translateY(-2px);
+    }
+    .no-courses {
+      padding: 40px 20px;
+      font-size: 1.1rem;
+      color: #999;
+    }
+
+    @media (max-width: 768px) {
+      .courses-grid {
+        grid-template-columns: 1fr;
+      }
+      .courses-section-title {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div id="cursor-glow"></div>
+
+  <nav id="navbar">
+    <div class="nav-content">
+      <a href="#" class="logo">JAPANESE LEARNING</a>
+      <div class="nav-links">
+        <a href="#">Khóa học</a>
+        <a href="#">Cộng đồng</a>
+        <a href="#">Tài liệu</a>
+        <a href="/login" style="color: var(--secondary); opacity: 1;">Đăng nhập</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="cloud" style="width:500px; height:200px; top:10%; left:-100px;"></div>
+    <div class="cloud" style="width:400px; height:150px; top:20%; right:-50px; animation-delay: -2s;"></div>
+    <div class="cloud" style="width:300px; height:100px; bottom:30%; left:20%; animation-delay: -4s;"></div>
+
+    <div class="slogan-box">
+      <span class="s-vi">Vì một Việt Nam</span>
+      <span class="s-mot">KHÔNG CÒN NHỎ BÉ</span>
+      <a href="/login" class="btn-main">Bắt đầu hành trình</a>
+    </div>
+
+    <svg class="city-svg" viewBox="0 0 1440 400" preserveAspectRatio="xMidYMax slice">
+      <defs>
+        <linearGradient id="cityGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#2AACAC;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#1D9090;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="320" width="1440" height="80" fill="url(#cityGrad)"/>
+      
+      <g class="wheel" style="transform-origin: 150px 250px;">
+        <circle cx="150" cy="250" r="60" fill="none" stroke="#fff" stroke-width="2" opacity="0.3"/>
+        <line x1="150" y1="190" x2="150" y2="310" stroke="#fff" stroke-width="1" opacity="0.3"/>
+        <line x1="90" y1="250" x2="210" y2="250" stroke="#fff" stroke-width="1" opacity="0.3"/>
+        <circle cx="150" cy="190" r="5" fill="#F5A623"/>
+      </g>
+      <path d="M130 330 L150 250 L170 330" fill="none" stroke="#fff" stroke-width="2" opacity="0.5"/>
+
+      <rect x="350" y="120" width="70" height="200" fill="#2AACAC" opacity="0.8"/>
+      <rect x="430" y="180" width="50" height="140" fill="#2BBDBD" opacity="0.6"/>
+      <rect x="1000" y="80" width="10" height="240" fill="#fff" opacity="0.2"/>
+      <rect x="950" y="150" width="100" height="170" fill="#2AACAC" opacity="0.9"/>
+    </svg>
+  </section>
+
+  <!-- COURSES SECTION -->
+  <section class="courses-section">
+    <h2 class="courses-section-title">🚀 Khóa Học Tiếng Nhật</h2>
+    <p class="courses-section-subtitle">Chọn khóa học phù hợp và bắt đầu cuộc hành trình chinh phục ngôn ngữ Nhật Bản</p>
+    
+    <div class="courses-grid" th:if="${courses and !courses.isEmpty()}">
+      <div class="course-item" th:each="course : ${courses}">
+        <div class="course-header" th:text="${#strings.substring(course.getTitle(), 0, 1).toUpperCase()}">N</div>
+        <div class="course-body">
+          <h3 class="course-title" th:text="${course.getTitle()}">Khóa Học</h3>
+          <p class="course-desc">Học theo chương trình bài bản, chuẩn mực đạt chuẩn JLPT</p>
+          <span class="course-badge" th:if="${course.getIsFree()}" th:text="'Miễn phí'">Free</span>
+          <span class="course-badge pro" th:unless="${course.getIsFree()}" th:text="'Trả phí'">Pro</span>
+          <a href="#" class="course-btn" th:href="@{'/courses/' + ${course.getCourseId()}}" th:text="'Xem chi tiết →'">Xem chi tiết</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="no-courses" th:if="${!courses or courses.isEmpty()}">
+      <p>Không có khóa học nào hiện tại. Vui lòng quay lại sau!</p>
+    </div>
+  </section>
+
+  <div class="bottom-nav">
+    <a href="#" class="tab-item active">Trang chủ</a>
+    <a href="#" class="tab-item">Lộ trình học</a>
+    <a href="#" class="tab-item">Kho tài liệu</a>
+    <a href="#" class="tab-item">Thi thử JLPT</a>
+  </div>
+
+  <script>
+    // 1. Mouse Glow Effect
+    const glow = document.getElementById('cursor-glow');
+    document.addEventListener('mousemove', (e) => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top = e.clientY + 'px';
+    });
+
+    // 2. Navbar & Scroll Progress
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('navbar');
+      const progressBar = document.getElementById('progress-bar');
+      
+      // Navbar switch
+      if (window.scrollY > 50) nav.classList.add('scrolled');
+      else nav.classList.remove('scrolled');
+
+      // Progress bar
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      progressBar.style.width = scrolled + "%";
+    });
+
+    // 3. Parallax Clouds (Slow)
+    document.addEventListener('mousemove', (e) => {
+      const x = (window.innerWidth - e.pageX) / 50;
+      const y = (window.innerHeight - e.pageY) / 50;
+      document.querySelectorAll('.cloud').forEach(cloud => {
+        cloud.style.transform = `translate(${x}px, ${y}px)`;
+      });
+    });
+  </script>
+</body>
+</html>

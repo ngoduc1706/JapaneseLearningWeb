@@ -78,14 +78,7 @@ public class ViewController {
      */
     @GetMapping("/")
     public String home(Model model) {
-        // Check if user is authenticated
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && 
-            !authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ANONYMOUS"))) {
-            // User is authenticated, redirect to dashboard
-            return "redirect:/dashboard";
-        }
-        // User is not authenticated, show index page with available courses
+        // Always show landing page first when user opens the app.
         try {
             var allCourses = courseService.getAllCourses();
             model.addAttribute("courses", allCourses);
@@ -619,6 +612,14 @@ public class ViewController {
     public String profile(Model model) {
         model.addAttribute("pageTitle", "Profile");
         return "account/profile";
+    }
+
+    /**
+     * Account settings shortcut used by dashboard topbar.
+     */
+    @GetMapping("/account/settings")
+    public String accountSettings() {
+        return "redirect:/profile";
     }
 
     /**

@@ -1,291 +1,377 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/common :: head('Profile - Japanese Learning Web')}"></head>
+<head th:replace="fragments/layout :: head('Cai dat tai khoan')"></head>
 <body>
-    <nav th:replace="~{fragments/common :: navbar('profile')}"></nav>
+<style>
+    .settings-wrap { max-width: 1080px; margin: 0 auto; }
+    .settings-hero {
+        background: linear-gradient(135deg, #153946 0%, #0f766e 100%);
+        color: #fff;
+        border-radius: 16px;
+        padding: 22px 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, .14);
+    }
+    .settings-hero h2 { margin: 0 0 6px 0; font-size: 24px; font-weight: 900; }
+    .settings-hero p { margin: 0; opacity: .9; }
 
-    <main class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-10 col-lg-8">
-                <!-- Tab Navigation -->
-                <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">
-                            <i class="bi bi-person"></i> Profile
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">
-                            <i class="bi bi-lock"></i> Change Password
-                        </button>
-                    </li>
-                </ul>
+    .settings-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+    }
+    .settings-tab {
+        border: 1.5px solid #d9e2ec;
+        background: #fff;
+        color: #334155;
+        border-radius: 999px;
+        padding: 9px 16px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+    .settings-tab.active {
+        background: #0f766e;
+        border-color: #0f766e;
+        color: #fff;
+    }
 
-                <div class="tab-content" id="profileTabContent">
-                    <!-- Profile Tab -->
-                    <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                        <div class="card shadow">
-                            <div class="card-body p-4">
-                                <h4 class="card-title mb-4">My Profile Information</h4>
+    .settings-panel {
+        background: #fff;
+        border-radius: 14px;
+        padding: 22px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .08);
+    }
+    .settings-panel.hidden { display: none; }
 
-                                <!-- Avatar Section -->
-                                <div class="text-center mb-4">
-                                    <img id="avatarPreview" src="/assets/default-avatar.png" alt="Avatar" class="rounded-circle" width="120" height="120" style="border: 3px solid #17b6b7;">
-                                    <div class="mt-3">
-                                        <input type="file" id="avatarInput" accept="image/*" style="display: none;">
-                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('avatarInput').click()">
-                                            <i class="bi bi-cloud-upload"></i> Upload Avatar
-                                        </button>
-                                        <p class="text-muted small mt-2">Max 5MB • JPG, PNG, GIF</p>
-                                    </div>
-                                </div>
+    .avatar-block {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+    }
+    .avatar-block img {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #14b8a6;
+        background: #f1f5f9;
+    }
 
-                                <hr>
+    .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+    @media (max-width: 860px) {
+        .grid-2 { grid-template-columns: 1fr; }
+    }
 
-                                <!-- Profile Form -->
-                                <form id="profileForm">
-                                    <div class="row g-3 mb-3">
-                                        <div class="col-md-6">
-                                            <label for="profileEmail" class="form-label">Email <span class="text-danger">*</span></label>
-                                            <input type="email" class="form-control" id="profileEmail" readonly>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="profileUsername" class="form-label">Username <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="profileUsername" readonly>
-                                        </div>
-                                    </div>
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12px;
+        font-weight: 800;
+        color: #64748b;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+    .form-control {
+        width: 100%;
+        border: 1.5px solid #dbe3ec;
+        border-radius: 10px;
+        padding: 11px 12px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #0f172a;
+        outline: none;
+        background: #fff;
+    }
+    .form-control:focus {
+        border-color: #0f766e;
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, .12);
+    }
+    .form-control[readonly] {
+        background: #f8fafc;
+        color: #64748b;
+    }
 
-                                    <div class="row g-3 mb-3">
-                                        <div class="col-md-6">
-                                            <label for="profileFirstName" class="form-label">First Name</label>
-                                            <input type="text" class="form-control" id="profileFirstName" placeholder="John">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="profileLastName" class="form-label">Last Name</label>
-                                            <input type="text" class="form-control" id="profileLastName" placeholder="Doe">
-                                        </div>
-                                    </div>
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn {
+        border-radius: 10px;
+        border: none;
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+    .btn-primary { background: #0f766e; color: #fff; }
+    .btn-primary:hover { background: #0d655e; }
+    .btn-danger { background: #dc2626; color: #fff; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-light { background: #e2e8f0; color: #334155; }
+    .btn-light:hover { background: #cbd5e1; }
+</style>
 
-                                    <div class="row g-3 mb-4">
-                                        <div class="col-md-6">
-                                            <label for="profilePhone" class="form-label">Phone Number</label>
-                                            <input type="tel" class="form-control" id="profilePhone" placeholder="+84 9xxxxxxxx">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="profileProvider" class="form-label">Login Method</label>
-                                            <input type="text" class="form-control" id="profileProvider" readonly>
-                                        </div>
-                                    </div>
+<div th:replace="fragments/sidebar :: sidebar('dashboard')"></div>
 
-                                    <div class="d-flex gap-2">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="bi bi-check2"></i> Save Changes
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" onclick="loadProfile()">
-                                            <i class="bi bi-arrow-clockwise"></i> Reload
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+<main class="main-content">
+    <div th:replace="fragments/topbar :: topbar('/dashboard', 'Dashboard', '/account/settings', 'Cai dat')"></div>
 
-                    <!-- Change Password Tab -->
-                    <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
-                        <div class="card shadow">
-                            <div class="card-body p-4">
-                                <h4 class="card-title mb-4">Change Password</h4>
-                                <form id="passwordForm">
-                                    <div class="mb-3">
-                                        <label for="currentPassword" class="form-label">Current Password <span class="text-danger">*</span></label>
-                                        <input type="password" class="form-control" id="currentPassword" placeholder="Enter your current password" required>
-                                    </div>
+    <div class="container">
+        <div class="settings-wrap">
+            <section class="settings-hero">
+                <h2>Cai dat tai khoan</h2>
+                <p>Dong bo giao dien voi dashboard va cap nhat thong tin ca nhan nhanh chong.</p>
+            </section>
 
-                                    <hr>
+            <div class="settings-tabs">
+                <button class="settings-tab active" type="button" data-tab="profilePanel">Thong tin ca nhan</button>
+                <button class="settings-tab" type="button" data-tab="passwordPanel">Doi mat khau</button>
+            </div>
 
-                                    <div class="mb-3">
-                                        <label for="newPassword" class="form-label">New Password <span class="text-danger">*</span></label>
-                                        <input type="password" class="form-control" id="newPassword" placeholder="At least 6 characters" required>
-                                        <small class="text-muted">Password must be at least 6 characters long</small>
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <label for="confirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                                        <input type="password" class="form-control" id="confirmPassword" placeholder="Retype your new password" required>
-                                    </div>
-
-                                    <button type="submit" class="btn btn-danger">
-                                        <i class="bi bi-shield-check"></i> Change Password
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
+            <section id="profilePanel" class="settings-panel">
+                <div class="avatar-block">
+                    <img id="avatarPreview" src="/assets/default-avatar.png" alt="Avatar">
+                    <div>
+                        <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+                        <button type="button" class="btn btn-light" onclick="document.getElementById('avatarInput').click()">Tai avatar</button>
+                        <p style="font-size:12px;color:#64748b;margin-top:8px;">Toi da 5MB - JPG, PNG, GIF</p>
                     </div>
                 </div>
-            </div>
+
+                <form id="profileForm">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="profileEmail">Email</label>
+                            <input type="email" class="form-control" id="profileEmail" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="profileUsername">Username</label>
+                            <input type="text" class="form-control" id="profileUsername" readonly>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="profileFirstName">First Name</label>
+                            <input type="text" class="form-control" id="profileFirstName" placeholder="John">
+                        </div>
+                        <div class="form-group">
+                            <label for="profileLastName">Last Name</label>
+                            <input type="text" class="form-control" id="profileLastName" placeholder="Doe">
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="profilePhone">Phone Number</label>
+                            <input type="tel" class="form-control" id="profilePhone" placeholder="+84 9xxxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label for="profileProvider">Login Method</label>
+                            <input type="text" class="form-control" id="profileProvider" readonly>
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="submit" class="btn btn-primary">Luu thay doi</button>
+                        <button type="button" class="btn btn-light" onclick="loadProfile()">Tai lai</button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="passwordPanel" class="settings-panel hidden">
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" class="form-control" id="currentPassword" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" required>
+                        <p style="font-size:12px;color:#64748b;margin-top:6px;">Mat khau moi toi thieu 6 ky tu.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" required>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="submit" class="btn btn-danger">Doi mat khau</button>
+                    </div>
+                </form>
+            </section>
         </div>
-    </main>
+    </div>
+</main>
 
-    <footer th:replace="~{fragments/common :: footer}"></footer>
-    <th:block th:replace="~{fragments/common :: scripts}"></th:block>
-
-    <script>
-        // Load profile on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadProfile();
+<script>
+    document.querySelectorAll('.settings-tab').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.settings-tab').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.settings-panel').forEach(x => x.classList.add('hidden'));
+            btn.classList.add('active');
+            const panelId = btn.getAttribute('data-tab');
+            document.getElementById(panelId).classList.remove('hidden');
         });
+    });
 
-        // Load user profile
-        function loadProfile() {
-            fetch('/api/user/profile')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.data) {
-                        const profile = data.data;
-                        document.getElementById('profileEmail').value = profile.email || '';
-                        document.getElementById('profileUsername').value = profile.username || '';
-                        document.getElementById('profileFirstName').value = profile.firstName || '';
-                        document.getElementById('profileLastName').value = profile.lastName || '';
-                        document.getElementById('profilePhone').value = profile.phoneNumber || '';
-                        document.getElementById('profileProvider').value = profile.provider || 'LOCAL';
-                        
-                        if (profile.avatarUrl) {
-                            document.getElementById('avatarPreview').src = profile.avatarUrl;
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading profile:', error);
-                    showNotification('Error loading profile', 'error');
-                });
-        }
+    // Load profile on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadProfile();
+    });
 
-        // Avatar upload
-        document.getElementById('avatarInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            if (file.size > 5 * 1024 * 1024) {
-                showNotification('File size exceeds 5MB limit', 'error');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', file);
-
-            fetch('/api/user/profile/avatar', {
-                method: 'POST',
-                body: formData
-            })
+    // Load user profile
+    function loadProfile() {
+        fetch('/api/user/profile')
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.data) {
-                    document.getElementById('avatarPreview').src = data.data.avatarUrl;
-                    showNotification('Avatar uploaded successfully', 'success');
-                } else {
-                    showNotification('Error uploading avatar: ' + data.message, 'error');
+                    const profile = data.data;
+                    document.getElementById('profileEmail').value = profile.email || '';
+                    document.getElementById('profileUsername').value = profile.username || '';
+                    document.getElementById('profileFirstName').value = profile.firstName || '';
+                    document.getElementById('profileLastName').value = profile.lastName || '';
+                    document.getElementById('profilePhone').value = profile.phoneNumber || '';
+                    document.getElementById('profileProvider').value = profile.provider || 'LOCAL';
+
+                    if (profile.avatarUrl) {
+                        document.getElementById('avatarPreview').src = profile.avatarUrl;
+                    }
                 }
             })
             .catch(error => {
-                console.error('Error uploading avatar:', error);
-                showNotification('Error uploading avatar', 'error');
+                console.error('Error loading profile:', error);
+                showNotification('Error loading profile', 'error');
             });
-        });
+    }
 
-        // Update profile
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+    // Avatar upload
+    document.getElementById('avatarInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
 
-            const updateData = {
-                firstName: document.getElementById('profileFirstName').value,
-                lastName: document.getElementById('profileLastName').value,
-                phoneNumber: document.getElementById('profilePhone').value
-            };
-
-            fetch('/api/user/profile', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(updateData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Profile updated successfully', 'success');
-                    loadProfile();
-                } else {
-                    showNotification('Error: ' + data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error updating profile:', error);
-                showNotification('Error updating profile', 'error');
-            });
-        });
-
-        // Change password
-        document.getElementById('passwordForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            if (newPassword.length < 6) {
-                showNotification('New password must be at least 6 characters', 'error');
-                return;
-            }
-
-            if (newPassword !== confirmPassword) {
-                showNotification('Passwords do not match', 'error');
-                return;
-            }
-
-            const changePasswordData = {
-                currentPassword: currentPassword,
-                newPassword: newPassword,
-                confirmPassword: confirmPassword
-            };
-
-            fetch('/api/user/profile/change-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(changePasswordData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Password changed successfully', 'success');
-                    document.getElementById('passwordForm').reset();
-                } else {
-                    showNotification('Error: ' + data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error changing password:', error);
-                showNotification('Error changing password', 'error');
-            });
-        });
-
-        // Notification function
-        function showNotification(message, type = 'info') {
-            const alertType = type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info';
-            const alertHTML = `<div class="alert alert-${alertType} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>`;
-            
-            const alertContainer = document.createElement('div');
-            alertContainer.innerHTML = alertHTML;
-            alertContainer.className = 'position-fixed top-0 end-0 p-3';
-            alertContainer.style.zIndex = '9999';
-            document.body.appendChild(alertContainer);
-
-            setTimeout(() => alertContainer.remove(), 5000);
+        if (file.size > 5 * 1024 * 1024) {
+            showNotification('File size exceeds 5MB limit', 'error');
+            return;
         }
-    </script>
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch('/api/user/profile/avatar', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data) {
+                document.getElementById('avatarPreview').src = data.data.avatarUrl;
+                showNotification('Avatar uploaded successfully', 'success');
+            } else {
+                showNotification('Error uploading avatar: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error uploading avatar:', error);
+            showNotification('Error uploading avatar', 'error');
+        });
+    });
+
+    // Update profile
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const updateData = {
+            firstName: document.getElementById('profileFirstName').value,
+            lastName: document.getElementById('profileLastName').value,
+            phoneNumber: document.getElementById('profilePhone').value
+        };
+
+        fetch('/api/user/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Profile updated successfully', 'success');
+                loadProfile();
+            } else {
+                showNotification('Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error updating profile:', error);
+            showNotification('Error updating profile', 'error');
+        });
+    });
+
+    // Change password
+    document.getElementById('passwordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (newPassword.length < 6) {
+            showNotification('New password must be at least 6 characters', 'error');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            showNotification('Passwords do not match', 'error');
+            return;
+        }
+
+        const changePasswordData = {
+            currentPassword: currentPassword,
+            newPassword: newPassword,
+            confirmPassword: confirmPassword
+        };
+
+        fetch('/api/user/profile/change-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(changePasswordData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Password changed successfully', 'success');
+                document.getElementById('passwordForm').reset();
+            } else {
+                showNotification('Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error changing password:', error);
+            showNotification('Error changing password', 'error');
+        });
+    });
+
+    // Notification function
+    function showNotification(message, type = 'info') {
+        const bg = type === 'error' ? '#dc2626' : (type === 'success' ? '#16a34a' : '#0f766e');
+        const wrap = document.createElement('div');
+        wrap.textContent = message;
+        wrap.style.cssText = 'position:fixed;top:16px;right:16px;z-index:9999;padding:10px 14px;border-radius:10px;color:#fff;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.18);background:' + bg;
+        document.body.appendChild(wrap);
+        setTimeout(() => wrap.remove(), 3200);
+    }
+</script>
 </body>
 </html>
