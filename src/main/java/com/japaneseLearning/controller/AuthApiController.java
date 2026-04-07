@@ -92,6 +92,12 @@ public class AuthApiController {
     public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
         ObjectNode response = objectMapper.createObjectNode();
         try {
+            if (newPassword == null || newPassword.length() < 6) {
+                response.put("success", false);
+                response.put("message", "Mật khẩu phải có ít nhất 6 ký tự");
+                return ResponseEntity.badRequest().body(response);
+            }
+
             java.util.Optional<com.japaneseLearning.entity.PasswordResetToken> tokenOpt = tokenRepository.findByToken(token);
             
             if (tokenOpt.isEmpty() || tokenOpt.get().isExpired()) {
