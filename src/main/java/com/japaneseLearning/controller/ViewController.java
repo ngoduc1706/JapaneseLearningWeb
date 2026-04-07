@@ -601,8 +601,18 @@ public class ViewController {
      */
     @GetMapping("/forgot-password")
     public String forgotPassword(Model model) {
-        model.addAttribute("pageTitle", "Forgot Password");
+        model.addAttribute("pageTitle", "Quên mật khẩu");
         return "account/forgot-password";
+    }
+
+    /**
+     * Reset password page (accessed via link in email)
+     */
+    @GetMapping("/reset-password")
+    public String resetPassword(@RequestParam(required = false) String token, Model model) {
+        model.addAttribute("pageTitle", "Đặt lại mật khẩu");
+        model.addAttribute("token", token != null ? token : "");
+        return "account/reset-password";
     }
 
     /**
