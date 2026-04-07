@@ -606,6 +606,16 @@ public class ViewController {
     }
 
     /**
+     * Reset password page (token from email link)
+     */
+    @GetMapping("/reset-password")
+    public String resetPassword(@RequestParam(required = false) String token, Model model) {
+        model.addAttribute("token", token);
+        model.addAttribute("pageTitle", "Reset Password");
+        return "account/reset-password";
+    }
+
+    /**
      * User profile page
      */
     @GetMapping("/profile")
